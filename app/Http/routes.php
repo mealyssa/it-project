@@ -1,14 +1,14 @@
 <?php
 
-Route::get('/index',function(){
+Route::get('/',function(){
 	   return view('pages.index');
 });
 
-Route::post('auth/register','Users_Registration@postRegister');
+Route::post('auth/register','Account_Controller@postRegister');
 
-Route::post('auth/login','Users_Login@postLogin' );
+Route::post('auth/signIn','Account_Controller@postSignIn' );
 
-Route::get('logout','Users_Logout@index' );
+Route::get('logout','Account_Controller@logout' );
 
 Route::group(['middleware' => 'auth'], function () {
     

@@ -14,9 +14,11 @@
 		{!! Html::style('/assets/css/fullcalendar.css') !!}
 		{!! Html::style('/assets/css/metro.css') !!}
 		{!! Html::style('/assets/css/metro-icons.css') !!}
+       
         
         {!! Html::script('/assets/js/angular.min.js') !!}
         {!! Html::script('/assets/js/angular-route.min.js') !!}
+       
 	</head>
     
     

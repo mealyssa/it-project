@@ -13,22 +13,21 @@
 {!! Html::style('/assets/css/fullcalendar.css') !!}
 {!! Html::style('/assets/css/metro.css') !!}
 {!! Html::style('/assets/css/metro-icons.css') !!}
+ {!! Html::style('/assets/css/jquery.ambiance.css') !!}
 
 {!! Html::script('/assets/js/angular.min.js') !!}
 {!! Html::script('/assets/js/angular-route.min.js') !!}
 {!! Html::script('/assets/js/app.js') !!}
+{!! Html::script('/assets/js/jquery.ambiance.js') !!}
 
 
 
 <body style="background-color:#54B59A" >
-    
-    @if(session()->has('from_logout'))
-        <h4> {{ Session::get('from_logout') }} </h4>
-    @endif
-    
+  
    
-
   <nav class="navbar navbar-default">
+      
+   
     <div class="container">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -48,7 +47,7 @@
             </p>
           </li>
           <li>
-            <p class="navbar-text"><button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#signUp"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign Up</button>
+            <p class="navbar-text"><button id='btn_signup' type="button" class="btn btn-primary" data-toggle="modal" data-target="#signUp"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign Up</button>
             </p>
           </li>
 
@@ -68,6 +67,7 @@
           </div>
         </div>
       </nav>
+     <div id="successRegister" style="baclground-color:red"></div>
 
 
 
@@ -81,7 +81,7 @@
             </div> <!-- /.modal-header -->
 
             <div class="modal-body">
-            {!!Form::open(array('url'=>'auth/login','method'=>'post','role'=>'form' ))!!}
+            {!!Form::open(array('url'=>'auth/signIn','method'=>'post','role'=>'form' ))!!}
                 <div class="col-md-12" style="text-align:center;" >
                  <label id="logmessage"></label>
                 </div>
@@ -136,18 +136,25 @@
                   <div class="col-sm-12">
                     <div class="row">
                       <div class="col-md-6">
+                            <label> Firstname :</label>
                        <div class="input-group">
 
                         <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-tasks"></span></span>
-                        {!!Form::text('first_name',null,array('first_name','class' =>'form-control','placeholder'=>'Firstname'))!!}
-                        {{--  @if ($errors->has('first_name')) <p class="help-block">{{ $errors->first('first_name') }}</p> @endif --}}
+                        {!!Form::text('first_name',null,array('first_name','class' =>'form-control'))!!}  
                       </div>
+                           @if($errors->has('first_name'))
+                           <p class="text-danger">{{$errors->first('first_name')}}</p>
+                           @endif
                     </div>
                     <div class="col-md-6">
+                         <label>Lastname :</label>
                       <div class="input-group">
                         <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-tasks"></span></span>
-                        {!!Form::text('last_name',null,array('class'=>'form-control','placeholder'=>'Lastname'))!!}
+                        {!!Form::text('last_name',null,array('class'=>'form-control'))!!}
                       </div>
+                         @if($errors->has('last_name'))
+                           <p class="text-danger">{{$errors->first('last_name')}}</p>
+                           @endif
                     </div>
                   </div>
                 </div>
@@ -158,17 +165,27 @@
                 <div class="col-sm-12">
                   <div class="row">
                     <div class="col-md-6">
+                         <label>Username :</label>
                      <div class="input-group">
                       <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-user"></span></span>
-                      {!!Form::text('username',null,array('class'=>'form-control','placeholder'=>'Username'))!!}
+                      {!!Form::text('username',null,array('class'=>'form-control'))!!}
                     </div>
+                         @if($errors->has('username'))
+                           <p class="text-danger">{{$errors->first('username')}}</p>
+                           @endif
                   </div>
+                      
                   <div class="col-md-6">
+                   <label>Password :</label>
                     <div class="input-group">
                       <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-lock"></span></span>
-                      {!!Form::password('password',array('class'=>'form-control','placeholder'=>'Password'))!!}
+                      {!!Form::password('password',array('class'=>'form-control'))!!}
                     </div>
+                       @if($errors->has('password'))
+                           <p class="text-danger">{{$errors->first('password')}}</p>
+                           @endif
                   </div>
+                      
                 </div>
               </div>
             </div>
@@ -178,30 +195,31 @@
                 <div class="col-sm-12">
                   <div class="row">
                     <div class="col-md-6">
+                          <label> Contact Number :</label>
                      <div class="input-group">
-                      <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-taskglyphicon glyphicon-phones"></span></span>
-                       {!!Form::text('contact_number',null,array('class'=>'form-control','placeholder'=>'Contact_number'))!!}
+                      <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-phone"></span></span>
+                       {!!Form::text('contact_number',null,array('class'=>'form-control'))!!}
                     </div>
+                         @if($errors->has('contact_number'))
+                           <p class="text-danger">{{$errors->first('contact_number')}}</p>
+                           @endif
                   </div>
-                  <div class="col-md-6">
-                    <div class="input-group">
-                      <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-tasks"></span></span>
-                      {!!Form::text('role',null,array('class'=>'form-control','placeholder'=>'Role'))!!}
+                      
+                       <div class="col-md-6">
+                           <label>Email :</label>
+                     <div class="input-group">
+                      <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-envelope"></span></span>
+                       {!!Form::text('email',null,array('class'=>'form-control'))!!}
                     </div>
+                           @if($errors->has('email'))
+                           <p class="text-danger">{{$errors->first('email')}}</p>
+                           @endif
                   </div>
+                      
                 </div>
               </div>
-
             </div>
-            <div class="form-group">
-              <div class="col-md-12">
-               <div class="input-group">
-                <span class="input-group-addon" id="tasksicon"><span class="glyphicon glyphicon-envelope"></span></span>
-                {!!Form::text('email',null,array('class'=>'form-control','placeholder'=>'Email'))!!}
-              </div>
-            </div>
-          </div>
-
+          
 
           <div class="row">
 
@@ -223,18 +241,6 @@
 </div>
 </div>
 
-<div class="col-md-12" style="margin-top:28%;height:6%;background-color:#84603C">
-</div>
-<div class="col-md-12">
-  <div class="col-md-4">
-
-  </div>
-  <div class="col-md-4"style="text-align:center;font-weight:bold">
-   <h1 style="color:#fff"> Extrack</h1>
-   <h2>(Expense Tracking)</h2>
-   <p style="color:#0F375B">Capture Expense.Whenever.Wherever</p>
- </div>
-</div>
 </body> 
 
 <script>
@@ -253,6 +259,7 @@ $(document).ready(function(){
 });
 </script>
 
+
  @if(session()->has('error'))
         <script>
             
@@ -260,14 +267,48 @@ $(document).ready(function(){
             $("#logmessage").html('{{ Session::get('error') }}');
             $("#logmessage").addClass("alert alert-danger");
             setTimeout(function(){
-                $("#logmessage").empty();
-                $("#logmessage").removeClass("alert alert-danger");
-            },3000)
-            
-            
-          
+                   $("#logmessage").fadeOut("slow");
+//                $("#logmessage").empty();
+//                $("#logmessage").removeClass("alert alert-danger");
+              
+            },2000)
+
         </script>
 @endif
+@if(session()->has('registered'))
+    <script>
+        $(document).ready(function(){   
+            $.ambiance({message: "{{ Session::get('registered') }}", width: 500, timeout: 2});
+        }); 
+    </script>
+@endif
+
+@if(session()->has('errors'))
+    <script>$('#btn_signup').click();</script>
+@endif
+
+  
+@if(session()->has('from_logout'))
+<!--    <h4> {{ Session::get('from_logout') }} </h4>-->
+<script>     
+        $(document).ready(function(){
+            $.ambiance({message: "{{ Session::get('from_logout') }}", width: 500, timeout: 2});
+        });       
+    </script>
+@endif
+
+<style>
+.ambiance-default {
+  background: #dff0d8;
+  color: #008000;
+  padding: 10px;
+  margin-right: 100px;
+  font-weight: bold;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+</style>
+
+
 
 
 

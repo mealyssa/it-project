@@ -4,6 +4,9 @@ body{
 input{
 	text-align:center;
 }
+label{
+    font-weight: 400;
+}
 #table{
     border: 1px solid #ddd;
 }
@@ -69,24 +72,6 @@ input{
     z-index:1000;
 }
 
-
-/*
-.fc-event-skin{
-	background-color: #fff !important;
-	height: 50px;
-	border-color: #fff !important;
-	text-align: center;
-	color: #555 !important;
-	text-align: center !important;
-}
-.fc-state-highlight{
-	background-color: #fff !important;
-}
-#categorySidebar{
-	margin: 0 auto !important;
-	text-align: left;
-}
-*/
 #wrapper{
 	margin-bottom: 10%;
 }
@@ -133,16 +118,7 @@ input{
 	background-repeat: no-repeat;
 	background-position: center center;
 }
-/*#bannerContent{
-	color: white;
-	text-align: center;
-	font-size: 100px;
-	font-weight: bold;
-}
-#bannerBody{
-	color: white;
-	font-size: 30px;
-}*/
+
 video {
     width: 500px;
     height: 400px;
@@ -152,10 +128,7 @@ video {
     display: block !important;
 
 }
-/*#sign_inModal,#sign_upModal{
-	width: 500px;
-	margin: 0 auto;
-}*/
+
 #usernameLogin,#username,#password,#firstname,#lastname,#role,#contact_number,#passwordLogin{
 	width: 250px;
 }
@@ -166,31 +139,11 @@ width: 400px;
 #resgister{
 	width: 500px;
 }
-/*#content{
-	margin-top: 20%;
+#myModalLabel{
+    text-align: center;
 }
-#phone{
-	background-color: pink;
-	border-radius: 50%;
-	height: 150px;
-	width: 150px;
-	margin: 0 auto;
+.alert-info{
+    color: white;
+    background-color: #66CCEA;
+    border-color: #bce8f1;
 }
-#cam{
-	background-color: green;
-	border-radius: 50%;
-	height: 150px;
-	width: 150px;
-	margin: 0 auto;
-}
-#docs{
-	background-color: skyblue;
-	border-radius: 50%;
-	height: 150px;
-	width: 150px;
-	margin: 0 auto;
-}
-#content{
-	background-color: transparent;
-	 opacity: 0.8;
-}*/
