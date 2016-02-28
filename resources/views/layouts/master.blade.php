@@ -64,6 +64,9 @@
 			<li id="calendarTab">
 				<a href='/calendar'>Calendar Events</a>
 			</li>
+            <li id="OrganizationTab">
+				<a href='/organization'>Organization</a>
+			</li>
 
 		</ul>
 	</div>

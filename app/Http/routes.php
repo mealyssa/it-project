@@ -49,6 +49,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/graduation',function(){
         return view('pages.receipts.graduation');
     });
+    Route::get('/organization',function(){
+        return view('pages.organization');
+    });
     
     
     

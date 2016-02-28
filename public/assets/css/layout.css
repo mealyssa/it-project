@@ -147,3 +147,11 @@ width: 400px;
     background-color: #66CCEA;
     border-color: #bce8f1;
 }
+#inputsOrg{
+	border-radius: 5px;
+	width: 200px;
+}
+#orgContent{
+	width: 400px;
+	margin: 0 auto !important;
+}
