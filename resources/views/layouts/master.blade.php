@@ -14,10 +14,12 @@
 		{!! Html::style('/assets/css/fullcalendar.css') !!}
 		{!! Html::style('/assets/css/metro.css') !!}
 		{!! Html::style('/assets/css/metro-icons.css') !!}
-    
-
-
+        
+        {!! Html::script('/assets/js/angular.min.js') !!}
+        {!! Html::script('/assets/js/angular-route.min.js') !!}
 	</head>
+    
+    
 	<nav class="navbar navbar-default">
 		<div class="container">
 			<div class="navbar-header">
@@ -32,9 +34,9 @@
 
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 				<ul class="nav navbar-nav navbar-right">
-					<li><p class="navbar-text">Signed in as Mark Otto</p></li>
+					<li><p class="navbar-text">Signed in as {!! Auth::user()->username !!}</p></li>
 					<li class="dropdown">
-						<a href="#" ><span class="glyphicon glyphicon-off" id="logout"></a>
+						<a href="/logout" ><span class="glyphicon glyphicon-off" id="logout"></a>
 					</li>
 				</ul>
 			</div>

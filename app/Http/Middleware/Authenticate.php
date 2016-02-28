@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
-
+use Session;
 class Authenticate
 {
     /**
@@ -38,7 +38,8 @@ class Authenticate
             if ($request->ajax()) {
                 return response('Unauthorized.', 401);
             } else {
-                return redirect()->guest('auth/login');
+                Session::flash('error', "Session expired");
+                return redirect('/index');
             }
         }
 

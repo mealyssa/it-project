@@ -14,7 +14,20 @@
 {!! Html::style('/assets/css/metro.css') !!}
 {!! Html::style('/assets/css/metro-icons.css') !!}
 
-<body style="background-color:#54B59A">
+{!! Html::script('/assets/js/angular.min.js') !!}
+{!! Html::script('/assets/js/angular-route.min.js') !!}
+{!! Html::script('/assets/js/app.js') !!}
+
+
+
+<body style="background-color:#54B59A" >
+    
+    @if(session()->has('from_logout'))
+        <h4> {{ Session::get('from_logout') }} </h4>
+    @endif
+    
+   
+
   <nav class="navbar navbar-default">
     <div class="container">
       <div class="navbar-header">
@@ -31,11 +44,11 @@
         <ul class="nav navbar-nav navbar-right">
 
           <li>
-            <p class="navbar-text"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#signIn"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign In</button>
+            <p class="navbar-text"><button id='btn_signin' type="button" class="btn btn-primary" data-toggle="modal" data-target="#signIn"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign In</button>
             </p>
           </li>
           <li>
-            <p class="navbar-text"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#signUp"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign Up</button>
+            <p class="navbar-text"><button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#signUp"><span class="glyphicon glyphicon-lock"></span> &nbsp;Sign Up</button>
             </p>
           </li>
 
@@ -69,7 +82,9 @@
 
             <div class="modal-body">
             {!!Form::open(array('url'=>'auth/login','method'=>'post','role'=>'form' ))!!}
-               
+                <div class="col-md-12" style="text-align:center;" >
+                 <label id="logmessage"></label>
+                </div>
               <div class="form-group">
                 <div class="input-group">
                   <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
@@ -114,7 +129,7 @@
             <div class="modal-body">
               <div class="tab-pane" id="Registration">
                 {!!Form::open(array('url'=>'auth/register','method'=>'post','class'=>'form-horizontal','role'=>'form' ))!!}
-             <?php echo csrf_token(); ?>
+          
                 {{--  <form role="form" class="form-horizontal"> --}}
                 <div class="form-group">
 
@@ -237,6 +252,23 @@ $(document).ready(function(){
 
 });
 </script>
+
+ @if(session()->has('error'))
+        <script>
+            
+            $('#btn_signin').click();
+            $("#logmessage").html('{{ Session::get('error') }}');
+            $("#logmessage").addClass("alert alert-danger");
+            setTimeout(function(){
+                $("#logmessage").empty();
+                $("#logmessage").removeClass("alert alert-danger");
+            },3000)
+            
+            
+          
+        </script>
+@endif
+
 
 
 

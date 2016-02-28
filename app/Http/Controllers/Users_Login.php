@@ -20,11 +20,12 @@ class Users_Login extends Controller{
         $password = Input::get('password');
         if (Auth::attempt(['username' => $username, 'password' => $password]))
         {
-            return redirect('/home1');
+            return redirect('/home');
             
             
         }
         else{
+            Session::flash('error', "Username or password incorrect.");
             return redirect('/index');
         }
     }
