@@ -14,11 +14,11 @@ class FineReaderController extends Controller
         
         $applicationId = 'extrak receipt scanner';
         $password = '+0Mv+rU+EbB/8AmHYxGhgGkN';
-        $fileName = 'homebuilders.jpg';
+        $fileName = 'shopwise.jpg';
 
-       // $local_directory=dirname(__FILE__).'/receiptsImg';
+        // $local_directory=dirname(__FILE__).'/receiptsImg';
  
-            $local_directory = public_path().'/img';
+        $local_directory = public_path().'/img';
         
         $filePath = $local_directory.'/'.$fileName;
         
@@ -33,7 +33,7 @@ class FineReaderController extends Controller
 
         $url = 'http://cloud.ocrsdk.com/processReceipt?imageSource=scanner';
       
-  // Send HTTP POST request and ret xml response
+        // Send HTTP POST request and ret xml response
         $curlHandle = curl_init();
         curl_setopt($curlHandle, CURLOPT_URL, $url);
         curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, 1);
@@ -128,78 +128,29 @@ class FineReaderController extends Controller
         $response = curl_exec($curlHandle);
         curl_close($curlHandle);
  
-      //header('Content-type: application/rtf');
-      //header('Content-Disposition: attachment; filename="file.rtf"');
+        //header('Content-type: application/rtf');
+        //header('Content-Disposition: attachment; filename="file.rtf"');
 
-
- 
-        
         echo $response;
         
         echo "<br>";
         echo "<br>";
         
+        $lineItems = array();
 
         $xml = simplexml_load_string($response);
-        $lines = array();
-        $temp = '';
-
-        foreach($xml->children() as $page ) {
-           foreach($page->children() as $block) {
-              if($block->attributes()['blockType'] == "Text"){
-                  foreach($block->children() as $text) {  
-                      foreach($text->children() as $par) {
-                          foreach($par->children() as $line) {
-                              foreach($line->formatting as $formatting){
-                                  $temp = '';
-                                  foreach($formatting->children() as $charparams){
-                                    $temp .= $charparams;
-                                  }
-                                  $lines [] = $temp;
-                              }
-                          }
-                      } 
-                  }  
-              }
-               elseif($block->attributes()['blockType'] == "Table"){
-                   foreach($block->children() as $row){
-                       $temp = '';
-                       foreach($row->children() as $cell){
-                           $temp .= ' ';
-                           foreach($cell->children() as $text){
-                               foreach($text->children() as $par){
-                                   foreach($par->children() as $line) {
-                                    foreach($line->formatting as $formatting){
-                                      
-                                      foreach($formatting->children() as $charparams){
-                                        $temp .= $charparams;
-                                      }
-                                      
-                                    }
-                                }
-                               }
-                           }
-                          
-                       }
-                        $lines [] = $temp;
-                   }
-               }
-           }
-        }
-
-        $result = $this->parseValues($lines);
-        echo "<pre>";
-        print_r ($result);
-        echo "</pre>";
-    }
-    
-    function parseValues($lines){
-        $values = array();
-        foreach($lines as $line) {
-            $values[] = $line;
-        }
-        return $values;
-    }
         
+       foreach($xml->receipt->children() as $key=>$child){
+            if($child->getName() == "lineItem"){
+               
+                $lineItems[] = ['name' => $child->name, 'price' => $child->total ];
+            }
+       }
+        dd($lineItems);
+        
+        
+    }
     
+  
+ 
 }
