@@ -66,8 +66,12 @@
           <div class="col-md-6">
             </br>
             <p style="text-align:center">Capture Receipts</p>
-            <img class="img-responsive" id="cam" src='assets/images/cam.png'/>
+            <input type="file" id="fileUpload" name="fileUpload"><br>
+            <label for="fileUpload">
+              <img class="img-responsive" id="cam" src='assets/images/cam.png'/>
+            </label>
             </br></br>
+             <p class="text-center" id="fds"></p>
             <div class="col-md-12">
                 <p class="text-info">Opens device camera to CAPTURE or a scanner to SCAN receipts.</p>
             </div>
@@ -76,10 +80,14 @@
           <div class="col-md-6">
             </br>
             <p style="text-align:center">Upload Receipt Image</p>
+            <input type="file" id="fileUpload" name="fileUpload"><br>
+            <label for="fileUpload">
             <img id="cam" src='assets/images/upload.png'/>
+          </label>
             </br>
             </br>
-            </br>
+            
+            <div class="inputName"><p class="text-center" id="filename"></p></div>
             <div class="col-md-12">
               <p class="text-info">Upload image receipts from the local device storage.</p>
             </div>
@@ -94,6 +102,35 @@
     $(document).ready(function(){
         $('.container > ul').find('#homeTab').addClass('active');
     });
+
+    $('input[name="fileUpload"]').change(function(){
+       var filename = $(this).val();
+       $('#filename').html(filename);
+       $('#filename').append(" <button  onclick='enableInput()'   id='edit' type='button' class='btn btn-warning'><span class='glyphicon glyphicon-pencil'></button>");
+         $('#filename').append("<button  onclick='alert(1)'   id='upload' type='button' class='btn btn-primary'><span class='glyphicon glyphicon-upload'></button>");
+
+    });
+    
+    function enableInput(){
+      var p = $('#filename').text();     
+      $('.inputName').append("<input type='text' class='form-control' id='inputBoxFilename' value="+p+"> ");
+      $('#filename').empty();
+       $('#inputBoxFilename').keypress(function(e){
+      var key = e.which;
+      if(key == 13){
+          var name = $('#inputBoxFilename').val();
+          $('#filename').html(name);
+           $('#filename').append(" <button  onclick='enableInput()'   id='edit' type='button' class='btn btn-warning'><span class='glyphicon glyphicon-pencil'></button>");
+         $('#filename').append("<button  onclick='alert(1)'   id='upload' type='button' class='btn btn-primary'><span class='glyphicon glyphicon-upload'></button>");
+          $('#inputBoxFilename').remove();
+
+      }
+    });
+
+    }
+ 
+   
+    
 </script>
 
 @stop
