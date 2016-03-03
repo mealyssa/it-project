@@ -9,6 +9,7 @@ Route::post('auth/register','Account_Controller@postRegister');
 Route::post('auth/signIn','Account_Controller@postSignIn' );
 
 Route::get('logout','Account_Controller@logout' );
+Route::post('home/uploadReceipts','ReceiptsController@upload');
 
 Route::group(['middleware' => 'auth'], function () {
     
