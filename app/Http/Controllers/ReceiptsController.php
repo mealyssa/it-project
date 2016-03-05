@@ -9,15 +9,14 @@ use Input;
 class ReceiptsController extends Controller
 {
    public function upload(){
-       echo "waley";
-        // $file = $_POST['formData'];
-        // echo $file;
-        // $folder = "assets/receiptsImg/";
-        // $location = $folder.basename($_FILES['image']['name']);
-        // $file_tmp = $_FILES['image']['tmp_name'];
-        // $filename = $_FILES['image']['name'];
-        // echo $filename;
-        // Input::file('image')->move($folder,$filename);
+       
+
+        $folder = "assets/receiptsImg/";
+        $location = $folder.basename($_FILES['fileUpload']['name']);
+        $file_tmp = $_FILES['fileUpload']['tmp_name'];
+        $filename = $_FILES['fileUpload']['name'];
+        echo $filename;
+        Input::file('fileUpload')->move($folder,$filename);
 
       
    }

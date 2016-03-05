@@ -132,6 +132,7 @@ video {
 #usernameLogin,#username,#password,#firstname,#lastname,#role,#contact_number,#passwordLogin{
 	width: 250px;
 }
+
 #login {
 
 width: 400px;
@@ -158,6 +159,7 @@ width: 400px;
 #fileUpload{
 	display: none;
 }
+
 #edit,#upload{
 	margin-left: 20px;
 }

@@ -39,7 +39,7 @@ class Authenticate
                 return response('Unauthorized.', 401);
             } else {
                 Session::flash('error', "Session expired");
-                return redirect('/index');
+                return redirect('/');
             }
         }
 

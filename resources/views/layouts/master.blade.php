@@ -20,7 +20,7 @@
         {!! Html::script('/assets/js/angular-route.min.js') !!}
        
 	</head>
-    
+    <body>
     
 	<nav class="navbar navbar-default">
 		<div class="container">
@@ -84,6 +84,7 @@
 		</div>
 	</div>
 
+</body>
 </html>
 
 
@@ -92,3 +93,4 @@ $(function() {
 	$( "#startdate,#enddate" ).datepicker();
 });
 </script>
+

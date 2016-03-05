@@ -64,9 +64,9 @@
           <div class="col-md-6">
             </br>
             <p style="text-align:center">Capture Receipts</p>
-            <input type="file" id="fileUpload" name="fileUpload"><br>
+            <!-- <input type="file" id="fileUpload" name="fileUpload"><br> -->
             <label for="fileUpload">
-            <img class="img-responsive" id="cam" src='assets/images/cam.png'/>
+            <img class="img-responsive" id="" src='assets/images/cam.png'/>
             </label>
             </br></br>
             <p class="text-center" id="fds"></p>
@@ -77,6 +77,7 @@
 
           <div class="col-md-6">
             </br>
+            {!!Form::open(array('url'=>'home/uploadReceipts', 'method'=>'POST','enctype'=>"multipart/form-data"))!!} 
             <p style="text-align:center">Upload Receipt Image</p>
             {!!Form::file('fileUpload',array('id'=>'fileUpload','name'=>'fileUpload'))!!}
             {{-- <input type="file" id="fileUpload" name="fileUpload"><br> --}}
@@ -86,18 +87,7 @@
             </br>
             </br>
 
-            <div class="inputName"><p class="text-center" id="filename"></p></div>
-            <div class="col-md-12">
-            <p class="text-info">Upload image receipts from the local device storage.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-      {!!Form::open(array('url'=>'home/uploadReceipts','method'=>'POST'))!!}
-      <div class="modal fade" tabindex="-1" id="uploadModal" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
+            <div class="modal fade" tabindex="-1" id="uploadModal" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <!-- <div class="modal-header">
@@ -127,35 +117,61 @@
                 </div>
              </div> 
             <div class="modal-footer">
-              <button class="btn btn-primary" id="upload">Upload</button>
+              <button class="btn btn-primary" type="submit" id="modal_upload">Upload</button>
               <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
             </div> <!-- /.modal-footer -->
-            {!!Form::close()!!}
+        
           </div>
         </div>
+           
+            {!!Form::close()!!}
+            <div class="inputName"><p class="text-center" id="filename"></p></div>
+            <div class="col-md-12">
+            <p class="text-info">Upload image receipts from the local device storage.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+      
      
 
 <script>
+
     $(document).ready(function(){
         $('.container > ul').find('#homeTab').addClass('active');
     });
+
     $("#fileUpload").change(function(e){
-      tmppath = URL.createObjectURL(event.target.files[0]);
-      $("#ari").append("<img id='previewImage' style='margin:0 auto' src='"+tmppath+"'/>");
-      $("#uploadModal").modal('show');
-
-    });
-    $("#upload").click(function(){
-
-        $.ajax({
-      url   : "home/uploadReceipts", 
-      type  : "POST",
-     
-      data  : tmppath
-    });
+     // $("#fileUpload").val(this);
+      readURL(this);
     });
 
-  
+/*    $('#uploadModal').on('hidden.bs.modal', function () {
+      $("#fileUpload").val('');
+    });*/
+
+    $("#cam").click(function(e){
+     $("#fileUpload").val('');
+    });
+
+
+
+
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              $("#ari").html("<img id='previewImage' style='margin:0 auto'/>");
+              $('#previewImage').attr('src', e.target.result);
+              $("#uploadModal").modal('show');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 
 </script>
 

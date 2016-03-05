@@ -1,8 +1,6 @@
 <?php
 
-Route::get('/',function(){
-	   return view('pages.index');
-});
+Route::get('/','IndexController@index');
 
 Route::post('auth/register','Account_Controller@postRegister');
 
