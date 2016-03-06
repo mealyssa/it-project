@@ -1,0 +1,9 @@
+<?php $__env->startSection('contents'); ?>
+    
+<script>
+    $(document).ready(function(){
+        $('.container > ul').find('#aboutTab').addClass('active');  
+    });
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.master', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>

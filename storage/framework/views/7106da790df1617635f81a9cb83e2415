@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Expense Tracking</title>
+		<?php echo Html::script('/assets/js/jquery-1.10.2.js'); ?>
+
+		<?php echo Html::script('/assets/js/jquery-ui.js'); ?>
+
+		<?php echo Html::style('/assets/css/bootstrap.min.css'); ?>
+
+		<?php echo Html::style('/assets/css/layout.css'); ?>
+
+		<?php echo Html::style('/assets/css/datepicker.css'); ?>
+
+		<?php echo Html::style('/assets/css/jquery-ui.css'); ?>
+
+		<?php echo Html::script('/assets/js/bootstrap.min.js'); ?>
+
+		<?php echo Html::script('/assets/js/jquery.mobile-1.2.0.min.js'); ?>
+
+		<?php echo Html::script('/assets/js/fullcalendar.min.js'); ?>
+
+		<?php echo Html::style('/assets/css/fullcalendar.css'); ?>
+
+		<?php echo Html::style('/assets/css/metro.css'); ?>
+
+		<?php echo Html::style('/assets/css/metro-icons.css'); ?>
+
+       	<?php echo Html::style('/assets/css/jquery.ambiance.css'); ?>
+
+        
+        <?php echo Html::script('/assets/js/angular.min.js'); ?>
+
+        <?php echo Html::script('/assets/js/angular-route.min.js'); ?>
+
+        <?php echo Html::script('/assets/js/jquery.ambiance.js'); ?>
+
+       
+	</head>
+    <body>
+    
+	<nav class="navbar navbar-default">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Logo Here</a>
+			</div>
+
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav navbar-right">
+					<li><p class="navbar-text">Signed in as <?php echo Auth::user()->username; ?></p></li>
+					<li class="dropdown">
+						<a href="/logout" ><span class="glyphicon glyphicon-off" id="logout"></a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+		<ul class="nav nav-tabs">
+			<li id="homeTab">
+				<a href='/home'>Home</a>
+			</li>
+			<li id="aboutTab">
+				<a href='/about'>About Us</a>
+			</li>
+			<li id="expenseTab">
+				<a href='/expenses'>Expense</a>
+			</li>
+			<li id="liquidationTab">
+				<a href='/liquidation'>Liquidation</a>
+			</li>
+			<li id="receiptsTab">
+				<a href='/receipts'>Receipts</a>
+			</li>
+			<li id="calendarTab">
+				<a href='/calendar'>Calendar Events</a>
+			</li>
+            <li id="OrganizationTab">
+				<a href='/organization'>Organization</a>
+			</li>
+
+		</ul>
+	</div>
+	</br>
+	</br>
+	<div id="wrapper">
+	<?php echo $__env->yieldContent('contents'); ?>
+</div>
+
+	<div class="footer">
+		<div class="copyright">
+			<p id="footerp">
+				Copyright &copy; 2015 All rights reserved | Created by<a href="http://w3layouts.com">  Charles Angels</a>
+			</p>
+		</div>
+	</div>
+
+</body>
+</html>
+
+
+<script>
+$(function() {
+	$( "#startdate,#enddate" ).datepicker();
+});
+</script>
+

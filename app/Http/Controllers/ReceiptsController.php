@@ -9,6 +9,8 @@ use Input;
 use Session;
 use Hash;
 use Auth;
+use App\Receipts;
+
 class ReceiptsController extends Controller
 {
    public function upload(){
@@ -27,18 +29,26 @@ class ReceiptsController extends Controller
           return redirect('/home');
         }
         else{
-          $events = new Events;
-          $receipts = new Receipts;
- 
-          $events-> = Input::get('filenameTxtbox');
-          $folder = "assets/receiptsImg/";
-          $location = $folder.basename($_FILES['fileUpload']['name']);
-          $file_tmp = $_FILES['fileUpload']['tmp_name'];
-          $filename = $_FILES['fileUpload']['name'];
 
-          $userid = Auth::user()->id;
+          $receipts = new Receipts;
+          $activities = Input::all();
+
+          $folder = "assets/receiptsImg/";
+          $filename = Input::file('fileUpload')->getClientOriginalName();
+          $extension = Input::file('fileUpload')->getClientOriginalExtension();
           $hashedFilename = Hash::make($filename);
-          Input::file('fileUpload')->move($folder,$hashedFilename);
+          Input::file('fileUpload')->move($folder,$hashedFilename.'.'.$extension);
+      
+          $receipts->name = Input::get('filenameTxtbox');
+          $receipts->path = Hash::make($hashedFilename);
+          $receipts->event = $activities['activities'];
+          $receipts->user_id = Auth::user()->id;
+
+          $receipts->save();
+          
+
+        
+         
 
 
 
