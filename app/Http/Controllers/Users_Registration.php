@@ -60,13 +60,7 @@ class Users_Registration extends Controller
         	$user->save();
         	return Redirect::to('/home1');
         }
-   		// $first_name = Input::get('first_name');
-   		// $last_name = Input::get('last_name');
-   		// $username = Input::get('username');
-   		// $password = Input::get('password');
-   		// $contact_number = Input::get('contact_number');
-   		// $role = Input::get('role');
-   		// $email = Input::get('email');
+   	
 
 
    	}

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use App\Events;
+use View;
 
 class HomeController extends Controller
 {
@@ -22,8 +24,9 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function homePage()
     {
-        return view('home');
+        $activities =  [''=>'Please select activity'] + Events::lists('event_name', 'id')->all();
+        return view('pages.home',['activities' => $activities]);
     }
 }

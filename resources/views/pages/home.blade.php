@@ -52,15 +52,6 @@
     <div class="col-md-8">
       <div class="panel panel-default">
         <div class="panel-body">
-       <!--  <div class="form-group" style="width:200px;margin:0 autol"> -->
-       <!--  Select Event/Activity: </br></br>
-        <select class="form-control" id="sel1">
-        <option>Ringhop</option>
-        <option>Graduation Day</option>
-        <option>Cicct Days</option>
-        <option>Seminar</option>
-        </select> -->
-      <!--   </div> -->
           <div class="col-md-6">
             </br>
             <p style="text-align:center">Capture Receipts</p>
@@ -76,11 +67,11 @@
           </div>
 
           <div class="col-md-6">
-            </br>
+          </br>
+
             {!!Form::open(array('url'=>'home/uploadReceipts', 'method'=>'POST','enctype'=>"multipart/form-data"))!!} 
             <p style="text-align:center">Upload Receipt Image</p>
             {!!Form::file('fileUpload',array('id'=>'fileUpload','name'=>'fileUpload'))!!}
-            {{-- <input type="file" id="fileUpload" name="fileUpload"><br> --}}
             <label for="fileUpload">
             <img id="cam" src='assets/images/upload.png'/>
             </label>
@@ -91,7 +82,6 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <!-- <div class="modal-header">
-          
             </div>  -->
 
             <div class="modal-body">
@@ -101,15 +91,13 @@
                     <div id="ari">
 
                     </div>
-                  <div class="form-horizontal" style="width:400px;margin:0 auto">
+                   
+                  <div class="form-horizontal">
                     </br></br>
-                      <label>Select Event/Activity: </label></br></br>
-                      <select class="form-control" id="activitySelect" style="width:300px">
-                      <option>Ringhop</option>
-                      <option>Graduation Day</option>
-                      <option>Cicct Days</option>
-                      <option>Seminar</option>
-                      </select>
+                   {!!Form::select('activities',$activities)!!}
+                   </br></br>
+                  <input type="text" class="form-control" name = "filenameTxtbox" id="filenameTxtbox" placeholder="Ex. Mcdo Receipts" />
+                    <p class="text-center">Receipt Name : <span class="glyphicon glyphicon-pencil"></span></p>
                   </div>
                    </br></br>
                     </div>
@@ -117,7 +105,7 @@
                 </div>
              </div> 
             <div class="modal-footer">
-              <button class="btn btn-primary" type="submit" id="modal_upload">Upload</button>
+              <button class="btn btn-primary" type="submit" id="modal_upload" disabled="disable">Upload</button>
               <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
             </div> <!-- /.modal-footer -->
         
@@ -135,31 +123,74 @@
     </div>
   </div>
 </div>
-    
+
+@if(session()->has('empty_act'))
+  <script>    
+
+    $(document).ready(function(){
+      $.ambiance({message: "{{ Session::get('empty_act') }}", width: 500, timeout: 100000,type:"emptyNotification"});
+      $('#selectedDefault').html("PLease select first the activity where the expense belong");
+
+    });       
+  </script>
+@endif  
       
      
 
 <script>
 
+  
+
+    $(document).ready(function(){
+
+        $('[name=activities]').change(function(){
+          changeButton();
+       });
+
+        $('#filenameTxtbox').bind("keypress keydown",function(e){
+          var filename;
+          if (e.which == 8) {
+            e.preventDefault();
+            filename = $(this).val();
+            str = filename.substring(0, filename.length - 1);
+            $(this).val(str);
+          }
+
+          if (e.which == 32){
+            e.preventDefault();
+          }
+          
+
+          changeButton();
+        });
+
+    function changeButton(){
+
+        setTimeout(function(){
+          var event = $('[name=activities]').val();
+          var file = '';
+          file = $('#filenameTxtbox').val();
+          if(event != '' && file != '') {
+            $("#modal_upload").removeAttr("disabled");
+          }
+          else{
+            $("#modal_upload").attr("disabled","disable");
+          }
+        },100);
+
+      }
+
+    });  
     $(document).ready(function(){
         $('.container > ul').find('#homeTab').addClass('active');
     });
 
     $("#fileUpload").change(function(e){
-     // $("#fileUpload").val(this);
       readURL(this);
     });
-
-/*    $('#uploadModal').on('hidden.bs.modal', function () {
-      $("#fileUpload").val('');
-    });*/
-
     $("#cam").click(function(e){
      $("#fileUpload").val('');
     });
-
-
-
 
     function readURL(input) {
         if (input.files && input.files[0]) {
@@ -173,6 +204,9 @@
         }
     }
 
+   
+
 </script>
+
 
 @stop

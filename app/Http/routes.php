@@ -1,19 +1,18 @@
 <?php
 
 Route::get('/','IndexController@index');
-
+/*================== Manage Account =========================*/
 Route::post('auth/register','Account_Controller@postRegister');
-
 Route::post('auth/signIn','Account_Controller@postSignIn' );
-
 Route::get('logout','Account_Controller@logout' );
-Route::post('home/uploadReceipts','ReceiptsController@upload');
+/*================== End manage account======================*/
+
+
 
 Route::group(['middleware' => 'auth'], function () {
     
-    Route::get('/home',function(){
-        return view('pages.home');
-    });
+    Route::get('/home','HomeController@homePage');
+    Route::post('home/uploadReceipts','ReceiptsController@upload');
     
     Route::get('/expenses',function(){
 	   return view('pages.expenses');
