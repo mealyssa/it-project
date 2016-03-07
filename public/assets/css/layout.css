@@ -177,3 +177,22 @@ width: 400px;
 img {
     image-orientation: from-image;
 }
+#dataExtract{
+	width: 400px;
+}
+#extracted{
+
+	-webkit-box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+	-moz-box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+	box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+	padding: 10px;
+	border-radius:5px;
+
+}
+#wrapItems{
+	height: 200px;
+	
+    overflow: auto;
+}
+#expenseItems thead{
+	}

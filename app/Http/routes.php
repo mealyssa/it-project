@@ -58,3 +58,4 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 Route::get('/test','FineReaderController@sendImage');
+Route::get('/test/processImage','FineReaderController@processImage');

@@ -10,6 +10,10 @@ use App\Test;
 
 class FineReaderController extends Controller
 {
+    function processImage(){
+
+         $Ci = new COM("ClearImage.ClearImage");
+    }
     function sendImage(){
         
         $applicationId = 'extrak receipt scanner';
@@ -146,6 +150,8 @@ class FineReaderController extends Controller
                 $lineItems[] = ['name' => $child->name, 'price' => $child->total ];
             }
        }
+
+      
         dd($lineItems);
         
         

@@ -196,7 +196,7 @@
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
-              $("#ari").html("<img id='previewImage' style='margin:0 auto'/>");
+              $("#ari").html("<img id='previewImage' style=' width: 500px;height: 700px;background-position: center;background-size: cover;'/>");
               $('#previewImage').attr('src', e.target.result);
               $("#uploadModal").modal('show');
             }

@@ -3,14 +3,14 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Receipts1 extends Migration
+class ReceiptsMigrate extends Migration
 {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
+   public function up()
     {
         Schema::create('Receipts', function (Blueprint $table) {
             $table->increments('id');
@@ -29,6 +29,6 @@ class Receipts1 extends Migration
      */
     public function down()
     {
-        Schema::drop('Receipts');
+       Schema::drop('Receipts');
     }
 }
