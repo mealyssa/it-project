@@ -7,22 +7,22 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Test;
+use Session;
 
 class FineReaderController extends Controller
 {
-    function processImage(){
 
-         $Ci = new COM("ClearImage.ClearImage");
-    }
-    function sendImage(){
+    function extract(){
+
+        $image_name = session::get('session_ImageName');
         
         $applicationId = 'extrak receipt scanner';
         $password = '+0Mv+rU+EbB/8AmHYxGhgGkN';
-        $fileName = 'mcdonalds.jpeg';
+        $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
  
-        $local_directory = public_path().'/img';
+        $local_directory = public_path().'/assets/receiptsImg';
         
         $filePath = $local_directory.'/'.$fileName;
         
@@ -122,6 +122,7 @@ class FineReaderController extends Controller
             }
             die("Unexpected task status ".$taskStatus);
         }
+        
 
 
         $url = $arr["resultUrl"];   
@@ -135,17 +136,17 @@ class FineReaderController extends Controller
         //header('Content-type: application/rtf');
         //header('Content-Disposition: attachment; filename="file.rtf"');
 
-        echo $response;
+        // echo $response;
         
-        echo "<br>";
-        echo "<br>";
+        // echo "<br>";
+        // echo "<br>";
         
         $lineItems = array();
         $date = array();
         $time_purchased = array();
-        $address = "";
-        $total;
-        $Vendor = "";
+        $address = array();
+        $total = array();
+        $vendor = array();
         $recognizedText = array();
         
         $xml = simplexml_load_string($response);
@@ -158,16 +159,16 @@ class FineReaderController extends Controller
                    $date[] = ['Date' => $child->value];
                 }
                 elseif($child->attributes() == "Address"){
-                    $address = $child->value;
+                    $address = ['Address' => $child->value];
                 }
                 elseif ($child->attributes() == "Total") {
-                    $total = $child->value/100;
+                    $total = ['Total' => $child->value/100];
                 }
                 elseif ($child->attributes() == "Time") {
                     $time_purchased[] = [$child->value]; 
                 }
                 elseif ($child->attributes() == "Vendor") {
-                    $Vendor = $child->value;
+                    $Vendor = ['Vendor' => $child->value];
                 }
                 
             }
@@ -184,7 +185,9 @@ class FineReaderController extends Controller
         // echo $total;
        // dd($time_purchased);
        // echo $Vendor;
-        // dd($lineItems);     
+       $arrayData =  array($lineItems,$date);
+        return view('pages.expenses',['extract'=>$arrayData]); 
+
     }  
  
 }

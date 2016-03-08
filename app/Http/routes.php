@@ -13,6 +13,8 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::get('/home','HomeController@homePage');
     Route::post('home/uploadReceipts','ReceiptsController@upload');
+    Route::get('/expense/receipts/extractedData','FineReaderController@extract');
+
     
     Route::get('/expenses',function(){
 	   return view('pages.expenses');
@@ -57,5 +59,5 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
-Route::get('/test','FineReaderController@sendImage');
-Route::get('/test/processImage','FineReaderController@processImage');
+// Route::get('/test','FineReaderController@sendImage');
+// Route::get('/test/processImage','FineReaderController@processImage');

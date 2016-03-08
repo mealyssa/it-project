@@ -13,47 +13,44 @@ use App\Receipts;
 
 class ReceiptsController extends Controller
 {
-   public function upload(){
-        $isEmpty;
-        
-        if(empty(Input::get('activities'))){
-          $isEmpty = true; 
-        }
-        else{
-          $isEmpty = false;
-        }
+  public function upload(){
 
-        if($isEmpty) {
+    $isEmpty;
 
-          Session::flash('empty_act','Uploaded receipts does not belong any activities');
-          return redirect('/home');
-        }
-        else{
+    if(empty(Input::get('activities'))){
+      $isEmpty = true; 
+    }
+    else{
+      $isEmpty = false;
+    }
 
-          $receipts = new Receipts;
-          $activities = Input::all();
+    if($isEmpty) {
 
-          $folder = "assets/receiptsImg/";
-          $filename = Input::file('fileUpload')->getClientOriginalName();
-          $extension = Input::file('fileUpload')->getClientOriginalExtension();
-          $hashedFilename = Hash::make($filename);
-          Input::file('fileUpload')->move($folder,$hashedFilename.'.'.$extension);
-      
-          $receipts->name = Input::get('filenameTxtbox');
-          $receipts->path = Hash::make($hashedFilename);
-          $receipts->event = $activities['activities'];
-          $receipts->user_id = Auth::user()->id;
+      Session::flash('empty_act','Uploaded receipts does not belong any activities');
+      return redirect('/home');
+    }
+    else{
 
-          $receipts->save();
-          
+      $receipts = new Receipts;
+      $activities = Input::all();
 
-        
-         
+      $folder = "assets/receiptsImg/";
+      $filename = Input::file('fileUpload')->getClientOriginalName();
+      $extension = Input::file('fileUpload')->getClientOriginalExtension();
+      $hashedFilename = Hash::make($filename);
+      $hashedFilename = str_replace("/", "-", $hashedFilename);
+      Input::file('fileUpload')->move($folder,$hashedFilename.'.'.$extension);
+      echo $hashedFilename;
 
+      $receipts->name = Input::get('filenameTxtbox');
+      $receipts->path = $hashedFilename;
+      $receipts->event = $activities['activities'];
+      $receipts->user_id = Auth::user()->id;
 
+      $receipts->save(); 
 
-        }
-
-      
-   }
+      Session::put('session_ImageName',$hashedFilename.'.'.$extension);
+      return redirect('/expense/receipts/extractedData');
+    }
+  }
 }

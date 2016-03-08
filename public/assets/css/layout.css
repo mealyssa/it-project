@@ -196,3 +196,8 @@ img {
 }
 #expenseItems thead{
 	}
+#imageExtracted{
+	-webkit-box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+	-moz-box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+	box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
+}
