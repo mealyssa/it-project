@@ -18,7 +18,7 @@ class FineReaderController extends Controller
         
         $applicationId = 'extrak receipt scanner';
         $password = '+0Mv+rU+EbB/8AmHYxGhgGkN';
-        $fileName = 'shopwise.jpg';
+        $fileName = 'mcdonalds.jpeg';
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
  
@@ -141,22 +141,50 @@ class FineReaderController extends Controller
         echo "<br>";
         
         $lineItems = array();
-
+        $date = array();
+        $time_purchased = array();
+        $address = "";
+        $total;
+        $Vendor = "";
+        $recognizedText = array();
+        
         $xml = simplexml_load_string($response);
         
-       foreach($xml->receipt->children() as $key=>$child){
-            if($child->getName() == "lineItem"){
-               
-                $lineItems[] = ['name' => $child->name, 'price' => $child->total ];
-            }
-       }
+ 
+        foreach ($xml->receipt->children() as $key => $child) {
 
-      
-        dd($lineItems);
-        
-        
-    }
-    
-  
+            if($child->getName() == "field"){
+                if($child->attributes() == "Date"){
+                   $date[] = ['Date' => $child->value];
+                }
+                elseif($child->attributes() == "Address"){
+                    $address = $child->value;
+                }
+                elseif ($child->attributes() == "Total") {
+                    $total = $child->value/100;
+                }
+                elseif ($child->attributes() == "Time") {
+                    $time_purchased[] = [$child->value]; 
+                }
+                elseif ($child->attributes() == "Vendor") {
+                    $Vendor = $child->value;
+                }
+                
+            }
+            elseif($child->getName() == "lineItem"){
+                $lineItems[] = ['Name'=> $child->name,'Price' => $child->total/100];
+
+            }
+           
+        }
+
+        // dd($date);
+        // dd($lineItems);
+        // echo $address;
+        // echo $total;
+       // dd($time_purchased);
+       // echo $Vendor;
+        // dd($lineItems);     
+    }  
  
 }
