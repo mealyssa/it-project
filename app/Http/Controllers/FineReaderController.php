@@ -173,19 +173,43 @@ class FineReaderController extends Controller
                 
             }
             elseif($child->getName() == "lineItem"){
-                $lineItems[] = ['Name'=> $child->name,'Price' => $child->total/100];
+                $lineItems[] = ['name'=> $child->name,'price' => $child->total/100];
 
             }
            
         }
 
         // dd($date);
-        // dd($lineItems);
+         //dd($lineItems);
         // echo $address;
         // echo $total;
        // dd($time_purchased);
        // echo $Vendor;
-       $arrayData =  array($lineItems,$date);
+       $arrayData =  array('items'  => $lineItems,
+                           'date'   => $date);
+      
+//        $r_text = $xml->receipt->recognizedText;
+//        $lines = explode("\n", $r_text);
+//        $nthText = null;
+//        $receipt_number = null;
+//        
+//     
+//        foreach($lines as $index=>$line) {
+//            if (strpos($line, 'OR No') !== false) {
+//                
+//                $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
+//                $texts = explode(' ',$rightof_keyword);
+//                dd($texts);
+//                
+//                
+//            }
+//        }
+        
+        
+       
+        
+        
+        
         return view('pages.expenses',['extract'=>$arrayData]); 
 
     }  

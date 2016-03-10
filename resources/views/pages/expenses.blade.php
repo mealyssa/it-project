@@ -1,4 +1,6 @@
 
+
+
 @extends('layouts.master')
 
 @section('contents')
@@ -184,55 +186,16 @@
                                                         </tr>
                                                         
                                                     </thead>
-                                                      
+                                                   @foreach($extract['items'] as $item)
                                                         <tr>
                                                             <td>
-                                                                <input type="text"  value="Coke" class="form-control" disabled="disable" > 
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" value="12.00" class="form-control" disabled="disable"> 
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                <input type="text"  value="Ice Cream" class="form-control"  disabled="disable"> 
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" value="240.50" class="form-control" disabled="disable"> 
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                <input type="text" class="form-control" disabled="disable" > 
+                                                                <input type="text" value="{{ $item['name'] }}" class="form-control" disabled="disable" > 
                                                             </td>
                                                             <td> 
-                                                                <input type="text" class="form-control" disabled="disable"> 
+                                                                <input type="text" value= "{{ $item['price'] }}" class="form-control" disabled="disable"> 
                                                             </td>
                                                         </tr>
-                                                        <tr>
-                                                            <td>
-                                                                <input type="text"  value="Coke" class="form-control" disabled="disable" > 
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" value="12.00" class="form-control" disabled="disable"> 
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                <input type="text"  value="Ice Cream" class="form-control"  disabled="disable"> 
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" value="240.50" class="form-control" disabled="disable"> 
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                <input type="text" class="form-control" disabled="disable" > 
-                                                            </td>
-                                                            <td> 
-                                                                <input type="text" class="form-control" disabled="disable"> 
-                                                            </td>
-                                                        </tr>
+                                                    @endforeach
                                                     </table>
                                                 </div>
                                             </div>
