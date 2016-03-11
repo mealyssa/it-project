@@ -15237,3 +15237,15 @@ Stack trace:
 #49 C:\Users\RJ Xirc\Desktop\IT-project\public\index.php(54): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
 #50 C:\Users\RJ Xirc\Desktop\IT-project\server.php(21): require_once('C:\\Users\\RJ Xir...')
 #51 {main}  
+[2016-03-11 13:08:30] local.ERROR: exception 'Symfony\Component\Debug\Exception\FatalErrorException' with message 'syntax error, unexpected 'foreach' (T_FOREACH)' in C:\Users\RJ Xirc\Desktop\IT-project\app\Http\Controllers\FineReaderController.php:158
+Stack trace:
+#0 {main}  
+[2016-03-11 13:10:01] local.ERROR: exception 'Symfony\Component\Debug\Exception\FatalErrorException' with message 'syntax error, unexpected 'foreach' (T_FOREACH)' in C:\Users\RJ Xirc\Desktop\IT-project\app\Http\Controllers\FineReaderController.php:158
+Stack trace:
+#0 {main}  
+[2016-03-11 13:10:07] local.ERROR: exception 'Symfony\Component\Debug\Exception\FatalErrorException' with message 'syntax error, unexpected 'foreach' (T_FOREACH)' in C:\Users\RJ Xirc\Desktop\IT-project\app\Http\Controllers\FineReaderController.php:158
+Stack trace:
+#0 {main}  
+[2016-03-11 13:10:17] local.ERROR: exception 'Symfony\Component\Debug\Exception\FatalErrorException' with message 'syntax error, unexpected 'foreach' (T_FOREACH)' in C:\Users\RJ Xirc\Desktop\IT-project\app\Http\Controllers\FineReaderController.php:158
+Stack trace:
+#0 {main}  

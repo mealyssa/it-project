@@ -156,7 +156,7 @@
 
 
                                                 <label>Order Number :</label>
-                                                <input type="text" class="form-control" value="0025" id="dataExtract" disabled="disable"> 
+                                                <input type="text" class="form-control" value="{{ $extract['receipt_no'] }}" id="dataExtract" disabled="disable"> 
 
                                                 <label>Date of Purchased:</label>
                                                 <input type="text" value="01/23/2016" class="form-control" disabled="disable"> 

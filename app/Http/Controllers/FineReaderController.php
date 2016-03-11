@@ -132,28 +132,30 @@ class FineReaderController extends Controller
         curl_setopt($curlHandle, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($curlHandle);
         curl_close($curlHandle);
+        
+        return $this->getValues($response);
  
         //header('Content-type: application/rtf');
         //header('Content-Disposition: attachment; filename="file.rtf"');
-
-        // echo $response;
         
-        // echo "<br>";
-        // echo "<br>";
-        
-        $lineItems = array();
-        $date = array();
+           
+        //
+    }
+    
+    function getValues($response){
+    
+        $lineItems      = array();
+        $date           = array();
         $time_purchased = array();
-        $address = array();
-        $total = array();
-        $vendor = array();
+        $address        = array();
+        $total          = array();
+        $vendor         = array();
         $recognizedText = array();
-        
-        $xml = simplexml_load_string($response);
+        $xml            = simplexml_load_string($response);
+        $receiptNumber  = $this->getReceiptNumber($xml);
         
  
-        foreach ($xml->receipt->children() as $key => $child) {
-
+        foreach($xml->receipt->children() as $key => $child) {
             if($child->getName() == "field"){
                 if($child->attributes() == "Date"){
                    $date[] = ['Date' => $child->value];
@@ -174,44 +176,38 @@ class FineReaderController extends Controller
             }
             elseif($child->getName() == "lineItem"){
                 $lineItems[] = ['name'=> $child->name,'price' => $child->total/100];
-
             }
-           
         }
-
-        // dd($date);
-         //dd($lineItems);
-        // echo $address;
-        // echo $total;
-       // dd($time_purchased);
-       // echo $Vendor;
-       $arrayData =  array('items'  => $lineItems,
-                           'date'   => $date);
-      
-//        $r_text = $xml->receipt->recognizedText;
-//        $lines = explode("\n", $r_text);
-//        $nthText = null;
-//        $receipt_number = null;
-//        
-//     
-//        foreach($lines as $index=>$line) {
-//            if (strpos($line, 'OR No') !== false) {
-//                
-//                $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
-//                $texts = explode(' ',$rightof_keyword);
-//                dd($texts);
-//                
-//                
-//            }
-//        }
         
         
-       
-        
-        
+         $arrayData =  array(
+            'items'      => $lineItems,
+            'date'       => $date,
+            'receipt_no' => $receiptNumber
+         );
         
         return view('pages.expenses',['extract'=>$arrayData]); 
-
-    }  
+    }
+    
+    function getReceiptNumber($xml){
+        $r_text = $xml->receipt->recognizedText;
+        $lines = explode("\n", $r_text);
+        $receipt_number = null;
+        
+        foreach($lines as $index=>$line) {
+            if (strpos($line, 'OR No') !== false) {
+                $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
+                $texts = array_filter(explode(' ',$rightof_keyword));
+                foreach($texts as $text) {
+                    if(is_numeric($text)) {
+                        $receipt_number = $text;
+                    }
+                }
+                
+            }
+        }
+        
+        return ($receipt_number);
+    }
  
 }
