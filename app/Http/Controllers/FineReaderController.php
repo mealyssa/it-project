@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Test;
 use Session;
+use DateTime;
 
 class FineReaderController extends Controller
 {
@@ -150,15 +151,15 @@ class FineReaderController extends Controller
         $address        = array();
         $total          = array();
         $vendor         = array();
-        $recognizedText = array();
         $xml            = simplexml_load_string($response);
         $receiptNumber  = $this->getReceiptNumber($xml);
+        $recognizedText = $xml->receipt->recognizedText;
         
  
         foreach($xml->receipt->children() as $key => $child) {
             if($child->getName() == "field"){
                 if($child->attributes() == "Date"){
-                   $date[] = ['Date' => $child->value];
+                    $date = new DateTime($child->value[2].'-'.$child->value[0].'-'.$child->value[1]);   
                 }
                 elseif($child->attributes() == "Address"){
                     $address = ['Address' => $child->value];
@@ -170,7 +171,7 @@ class FineReaderController extends Controller
                     $time_purchased[] = [$child->value]; 
                 }
                 elseif ($child->attributes() == "Vendor") {
-                    $Vendor = ['Vendor' => $child->value];
+                    $vendor = $child->value;
                 }
                 
             }
@@ -178,36 +179,88 @@ class FineReaderController extends Controller
                 $lineItems[] = ['name'=> $child->name,'price' => $child->total/100];
             }
         }
+
+        $hasDuplicate = $this->hasDuplicateItemNames($lineItems);
+        if($hasDuplicate){
+            $this->getCorrectedNames($recognizedText,$lineItems);
+        }
+        else{
+            echo "ok ra";
+        }
         
         
          $arrayData =  array(
+            'vendor'     => $vendor,
+            'date'       => $date->format('Y-m-d'),  
             'items'      => $lineItems,
-            'date'       => $date,
-            'receipt_no' => $receiptNumber
+            'receipt_no' => $receiptNumber,
+            'recognized' => $recognized
          );
-        
-        return view('pages.expenses',['extract'=>$arrayData]); 
+      
+        //return view('pages.expenses',['extract'=>$arrayData]); 
     }
     
     function getReceiptNumber($xml){
         $r_text = $xml->receipt->recognizedText;
         $lines = explode("\n", $r_text);
+       // dd($lines);
         $receipt_number = null;
+
+        $filters = ['OR No','OR #'];
         
         foreach($lines as $index=>$line) {
-            if (strpos($line, 'OR No') !== false) {
-                $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
-                $texts = array_filter(explode(' ',$rightof_keyword));
-                foreach($texts as $text) {
-                    if(is_numeric($text)) {
-                        $receipt_number = $text;
-                    }
+            foreach($filters as $filter) {
+                if (strpos($line, $filter) !== false) {
+                    $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
+                    $texts = array_filter(explode(' ',$rightof_keyword));
+                    foreach($texts as $text) {
+                        if($this->isNumericWithDash($text)) {
+                            $receipt_number = $text;
+                            break 3;
+                        }
+                    } 
                 }
-                
             }
         }
         
         return ($receipt_number);
     }
+
+    function isNumericWithDash($string){ 
+        if (('-' == substr($string, 2, 1)) || ('-' == substr($string, 3, 1))) { 
+            if (is_numeric(str_replace('-', '', $string))) { 
+                return true; 
+            } 
+        } 
+        return false; 
+    }  
+
+    function hasDuplicateItemNames($lineItems){
+        //dd($lineItems);
+        $error = false;
+        $names = array();
+        foreach($lineItems as $lineItem){
+            $names[] = (string) $lineItem['name'];
+        }
+        
+        $duplicates = (array_count_values($names));
+        foreach ($duplicates as $key => $duplicate) {
+            if($duplicate > 0) {
+                $error = true;
+            }
+        }
+
+        return $error;
+    }
+
+    function getCorrectedNames($recognizedText,$lineItems){
+        $prices = array();
+        foreach ($lineItems as $key => $lineItem) {
+            $prices[] = $lineItem['price'];
+        }
+
+        dd($prices);
+    }
+
  
 }

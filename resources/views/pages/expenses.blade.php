@@ -4,6 +4,9 @@
 @extends('layouts.master')
 
 @section('contents')
+<header>
+<!-- {{ $extract['recognized'] }} -->
+</header>
 @if(session()->has('session_ImageName'))
    <div class="container">
     <div class="row">
@@ -152,14 +155,14 @@
                                         <div class="panel panel-default">
                                             <div class="panel-body">
                                                 <label>Merchant Name :</label>
-                                                <input type="text" class="form-control" value="Jollibee Fast food" id="dataExtract" disabled="disable"> 
+                                                <input type="text" class="form-control" value={{ $extract['vendor'] }} id="dataExtract" disabled="disable"> 
 
 
-                                                <label>Order Number :</label>
+                                                <label>Receipt/Invoice # :</label>
                                                 <input type="text" class="form-control" value="{{ $extract['receipt_no'] }}" id="dataExtract" disabled="disable"> 
 
                                                 <label>Date of Purchased:</label>
-                                                <input type="text" value="01/23/2016" class="form-control" disabled="disable"> 
+                                                <input type="text" value="{{ $extract['date'] }}" class="form-control" disabled="disable"> 
 
                                                 <label>Place of Purchased:</label>
                                                 <input type="text" value="Bsak Pardo" class="form-control" id="dataExtract" disabled="disable">   
