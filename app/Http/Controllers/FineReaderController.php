@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Test;
 use Session;
 use DateTime;
+use App\vendors;
 
 class FineReaderController extends Controller
 {
@@ -144,18 +145,31 @@ class FineReaderController extends Controller
     }
     
     function getValues($response){
+
+        $vendors = new Vendors;
     
         $lineItems      = array();
         $date           = array();
         $time_purchased = array();
         $address        = array();
         $total          = array();
-        $vendor         = array();
         $xml            = simplexml_load_string($response);
         $recognizedText = $xml->receipt->recognizedText;
         $lines          = explode("\n", $recognizedText);
         $receiptNumber  = $this->getReceiptNumber($lines);
         
+        $vendor         = '';
+
+        foreach($lines as $line) {
+            $result = $vendors->find($line);
+            if($result!=null) {
+                $vendor = $result;
+                break;
+            }
+        }
+
+
+
         
  
         foreach($xml->receipt->children() as $key => $child) {
@@ -173,7 +187,7 @@ class FineReaderController extends Controller
                     $time_purchased[] = [$child->value]; 
                 }
                 elseif ($child->attributes() == "Vendor") {
-                    $vendor = $child->value;
+                    //$vendor = $child->value;
                 }
                 
             }
@@ -190,7 +204,7 @@ class FineReaderController extends Controller
             //nothing to do
         }
         
-        
+       //$vendor = "mariem tabay jr";
          $arrayData =  array(
             'vendor'     => $vendor,
             'date'       => $date->format('Y-m-d'),  
@@ -208,13 +222,13 @@ class FineReaderController extends Controller
        // dd($lines);
         $receipt_number = null;
 
-        $filters = ['OR No','OR #'];
+        $filters = ['OR No','OR #','SI #'];
         
         foreach($lines as $index=>$line) {
             foreach($filters as $filter) {
                 if (strpos($line, $filter) !== false) {
 
-                    $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
+                    $rightof_keyword = substr( $line, strpos( $line, $filter) + strlen($filter) );
                     $texts = array_filter(explode(' ',$rightof_keyword));
                     foreach($texts as $text) {
                         if(is_numeric($text)){

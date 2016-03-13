@@ -155,7 +155,7 @@
                                         <div class="panel panel-default">
                                             <div class="panel-body">
                                                 <label>Merchant Name :</label>
-                                                <input type="text" class="form-control" value={{ $extract['vendor'] }} id="dataExtract" disabled="disable"> 
+                                                <input type="text" class="form-control" value="{!! $extract['vendor'] !!}" id="dataExtract" disabled="disable"> 
 
 
                                                 <label>Receipt/Invoice # :</label>
