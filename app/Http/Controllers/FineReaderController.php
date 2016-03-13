@@ -152,14 +152,16 @@ class FineReaderController extends Controller
         $total          = array();
         $vendor         = array();
         $xml            = simplexml_load_string($response);
-        $receiptNumber  = $this->getReceiptNumber($xml);
         $recognizedText = $xml->receipt->recognizedText;
+        $lines          = explode("\n", $recognizedText);
+        $receiptNumber  = $this->getReceiptNumber($lines);
+        
         
  
         foreach($xml->receipt->children() as $key => $child) {
             if($child->getName() == "field"){
                 if($child->attributes() == "Date"){
-                    $date = new DateTime($child->value[2].'-'.$child->value[0].'-'.$child->value[1]);   
+                    $date = new DateTime($child->value[2].'-'.$child->value[1].'-'.$child->value[0]);   
                 }
                 elseif($child->attributes() == "Address"){
                     $address = ['Address' => $child->value];
@@ -182,10 +184,10 @@ class FineReaderController extends Controller
 
         $hasDuplicate = $this->hasDuplicateItemNames($lineItems);
         if($hasDuplicate){
-            $this->getCorrectedNames($recognizedText,$lineItems);
+            $lineItems = $this->getCorrectedNames($lines,$lineItems);
         }
         else{
-            echo "ok ra";
+            //nothing to do
         }
         
         
@@ -194,15 +196,15 @@ class FineReaderController extends Controller
             'date'       => $date->format('Y-m-d'),  
             'items'      => $lineItems,
             'receipt_no' => $receiptNumber,
-            'recognized' => $recognized
+            'recognized' => $recognizedText
          );
-      
-        //return view('pages.expenses',['extract'=>$arrayData]); 
+      //echo $response;
+        return view('pages.expenses',['extract'=>$arrayData]); 
     }
     
-    function getReceiptNumber($xml){
-        $r_text = $xml->receipt->recognizedText;
-        $lines = explode("\n", $r_text);
+    function getReceiptNumber($lines){
+        
+        
        // dd($lines);
         $receipt_number = null;
 
@@ -211,10 +213,15 @@ class FineReaderController extends Controller
         foreach($lines as $index=>$line) {
             foreach($filters as $filter) {
                 if (strpos($line, $filter) !== false) {
+
                     $rightof_keyword = substr( $line, strpos( $line, 'OR No') + 5);
                     $texts = array_filter(explode(' ',$rightof_keyword));
                     foreach($texts as $text) {
-                        if($this->isNumericWithDash($text)) {
+                        if(is_numeric($text)){
+                            $receipt_number = $text;
+                            break 3;
+                        }
+                        elseif($this->isNumericWithDash($text)) {
                             $receipt_number = $text;
                             break 3;
                         }
@@ -244,8 +251,9 @@ class FineReaderController extends Controller
         }
         
         $duplicates = (array_count_values($names));
+        
         foreach ($duplicates as $key => $duplicate) {
-            if($duplicate > 0) {
+            if($duplicate > 1) {
                 $error = true;
             }
         }
@@ -253,13 +261,62 @@ class FineReaderController extends Controller
         return $error;
     }
 
-    function getCorrectedNames($recognizedText,$lineItems){
+    function getCorrectedNames($lines,$lineItems){
         $prices = array();
         foreach ($lineItems as $key => $lineItem) {
             $prices[] = $lineItem['price'];
         }
 
-        dd($prices);
+        $pricesSize = sizeof($prices);
+        $linesSize = sizeof($lines);
+
+        $firstOccurenceAtIndex = null;
+
+        for($i=0; $i<$linesSize; $i++) {
+            $str = (string)$prices[0];
+            if (strpos($lines[$i], $str) !== FALSE){
+                $isOK = true;
+                $j = $i;
+                foreach($prices as $price) {
+                    if (strpos($lines[$j], (string)$price) !== FALSE){
+                        //nothing to do for now
+                    }
+                    else{
+                        $isOK = false;
+                    }
+                    $j=($j+2);
+                }
+
+                if($isOK){
+                    $firstOccurenceAtIndex = $i;
+                    break 1;
+                    
+                }
+            }
+     
+
+        }
+        $itemCount = sizeof($lineItems);
+        $itemNames = $this->getItemNameFromUpperLine($firstOccurenceAtIndex,$lines,$itemCount);
+
+        $correctedLineItems = array();
+        for($i=0; $i<$itemCount; $i++) {
+            $correctedLineItems[] = ['name'=>$itemNames[$i], 'price'=>$prices[$i]];
+        }
+        return ($correctedLineItems);
+  
+    }
+
+    function getItemNameFromUpperLine($firstOccurenceAtIndex,$lines,$itemCount){
+        $index = $firstOccurenceAtIndex - 1;
+        $itemNames = array();
+        for($i=0; $i<$itemCount; $i++) {
+            $itemNames[] = trim($lines[$index]);
+            $index = ($index+2);
+        }
+
+        return ($itemNames);
+
     }
 
  
