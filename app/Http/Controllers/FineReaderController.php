@@ -151,7 +151,9 @@ class FineReaderController extends Controller
         $recognizedText = $xml->receipt->recognizedText;
         $lineArray      = explode("\n", $recognizedText);
         $receiptNumber  = $this->getReceiptNumber($lineArray);
+        //$lineItemsArray = $this->getLineItems($lineArray);
         $vendor         = null;
+        $this->getLineItems($lineArray);
 
         foreach($lineArray as $line) {
             $result = $vendors->find($line);
@@ -160,12 +162,11 @@ class FineReaderController extends Controller
                 break;
             }
         }
-
-
          $arrayData =  array(
             'vendor'         => $vendor,
             'receipt_no'     => $receiptNumber,
-            'recognizedText' => $lineArray
+            'recognizedText' => $lineArray,
+            //'lineItems'      => $lineItemsArray
          );
 
 
@@ -173,12 +174,14 @@ class FineReaderController extends Controller
     }
     
     function getReceiptNumber($lines){
-        
-        
-       // dd($lines);
         $receipt_number = null;
 
-        $filters = ['OR No','OR #','SI #'];
+        $filters = [
+            'OR No',
+            'OR #',
+            'SI #',
+            'SALES INVOICE NUMBER'
+        ];
         
         foreach($lines as $index=>$line) {
             foreach($filters as $filter) {
@@ -210,6 +213,83 @@ class FineReaderController extends Controller
             } 
         } 
         return false; 
+    }
+
+    function isNumericWithComma($string){ 
+        if ((',' == substr($string, 2, 1)) || (',' == substr($string, 3, 1))) { 
+            if (is_numeric(str_replace('-', '', $string))) { 
+                return true; 
+            } 
+        } 
+        return false; 
+    }
+
+    function getLineItems($lineArray){
+        $possibleTotalValues = array();
+
+        $filters = array(
+            'Total',
+            'Subtotal',
+            'Sub-total'
+        );
+
+        /*find all lines containing the total field*/
+        foreach($lineArray as $key=>$line) {
+            foreach($filters as $filter) {
+                if( strpos( strtolower($line), strtolower($filter)) !==FALSE ) {
+
+                    /*extract the float value. example: Total:3.30 will return 3.30*/
+                    $value = (  filter_var( $line, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION ) ); 
+                    $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
+                    echo $value."<br>";
+                }
+            }
+        }
+
+        foreach( $possibleTotalValues as $possibleTotalValue) {
+            $index = $possibleTotalValue['index'];
+            $possibleItems = array();
+
+            for($i=0; $i<$index; $i++) {
+
+                 $words = explode(' ',$lineArray[$i]);
+                 $value = '';
+                 $split = '';
+
+                 foreach($words as $word){
+                    if( strpos($word,'.' ) !==FALSE ){
+                        $split = explode('.',$word);
+                        if(sizeof($split) == 2 && strlen($split[1])==2 ){
+                             $value = $word;
+                        }
+                       
+                    }
+                    elseif( strpos($word,',' ) !==FALSE){
+                        $split = explode(',',$word);
+                        if(sizeof($split) == 2 && strlen($split[1])==2){
+                             $value = $word;
+                        }
+                    }
+
+                    
+
+                 }
+
+                 if( $value > 0 ) {
+                    $possibleItems[] = ['index'=>$i, 'value'=>$value];
+                }
+                
+
+            }
+            echo "<pre>";
+            print_r($possibleItems);
+            echo "</pre>";
+           
+        }
+
+
+
+        
     }
 
 

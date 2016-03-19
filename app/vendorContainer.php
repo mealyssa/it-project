@@ -3,6 +3,7 @@ namespace App;
 class VendorContainer {
 
 	private $vendorNames = array(
+
 		'Super Metro',
 		'Cebu Home Builders',
 		'7-ElEVEN',
@@ -17,7 +18,7 @@ class VendorContainer {
 
 		foreach($this->vendorNames as $vendorName) {
 
-			$words = explode(' ',$vendorName);
+			$words = explode(' ',$vendorName); //split by space
 			$truthValues = array();
 			foreach($words as $word) {
 				similar_text(strtolower($string), strtolower($word),$percentage);
@@ -42,6 +43,7 @@ class VendorContainer {
 	}
 
 	function getAll(){
+
 		return $this->$vendorNames;
 	}
 
