@@ -1,10 +1,15 @@
 <?php
 namespace App;
-class Vendors {
+class VendorContainer {
 
 	private $vendorNames = array(
 		'Super Metro',
-		'Cebu Home Builders'
+		'Cebu Home Builders',
+		'7-ElEVEN',
+		'LONGWIN TABUNOK',
+		"Metro Fresh n Easy",
+		"Shopwise",
+		'Ace Hardware'
 		);
 
 	function find($string) {
@@ -13,19 +18,15 @@ class Vendors {
 		foreach($this->vendorNames as $vendorName) {
 
 			$words = explode(' ',$vendorName);
-			//$error = false;
 			$truthValues = array();
 			foreach($words as $word) {
-				if( strpos( strtolower($string), strtolower($word)) !==FALSE ) {
+				similar_text(strtolower($string), strtolower($word),$percentage);
+				if( ( strpos( strtolower($string), strtolower($word)) !==FALSE ) || $percentage >= 15 ) {
 					$truthValues[] = "yes";
 				}
 				else{
 					$truthValues[] = "no";
 				}
-				
-							
-
-				
 			}
 			$truthValues = (array_count_values($truthValues));
 			
@@ -39,6 +40,12 @@ class Vendors {
 
 		return $foundVendor;
 	}
+
+	function getAll(){
+		return $this->$vendorNames;
+	}
+
+
 
 
 	

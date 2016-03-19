@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Test;
 use Session;
 use DateTime;
-use App\vendors;
+use App\vendorContainer;
 
 class FineReaderController extends Controller
 {
@@ -18,8 +18,8 @@ class FineReaderController extends Controller
 
         $image_name = session::get('session_ImageName');
         
-        $applicationId = 'extrak receipt scanner';
-        $password = '+0Mv+rU+EbB/8AmHYxGhgGkN';
+        $applicationId = 'extrak receipt scanner2';
+        $password = 'nocLEqMkht7O/LDcou0mA62T';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -134,33 +134,26 @@ class FineReaderController extends Controller
         curl_setopt($curlHandle, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($curlHandle);
         curl_close($curlHandle);
-        
-        return $this->getValues($response);
- 
-        //header('Content-type: application/rtf');
-        //header('Content-Disposition: attachment; filename="file.rtf"');
-        
-           
-        //
+    
+        $arrayData = $this->getValues($response);
+        dd($arrayData);
+
+        //return view('pages.expenses',['extract'=>$arrayData]); 
+        /*header('Content-type: application/xml');
+        header('Content-Disposition: attachment; filename="file.xml"');*/
     }
+
+    
     
     function getValues($response){
-
-        $vendors = new Vendors;
-    
-        $lineItems      = array();
-        $date           = array();
-        $time_purchased = array();
-        $address        = array();
-        $total          = array();
+        $vendors        = new VendorContainer;
         $xml            = simplexml_load_string($response);
         $recognizedText = $xml->receipt->recognizedText;
-        $lines          = explode("\n", $recognizedText);
-        $receiptNumber  = $this->getReceiptNumber($lines);
-        
-        $vendor         = '';
+        $lineArray      = explode("\n", $recognizedText);
+        $receiptNumber  = $this->getReceiptNumber($lineArray);
+        $vendor         = null;
 
-        foreach($lines as $line) {
+        foreach($lineArray as $line) {
             $result = $vendors->find($line);
             if($result!=null) {
                 $vendor = $result;
@@ -169,51 +162,14 @@ class FineReaderController extends Controller
         }
 
 
-
-        
- 
-        foreach($xml->receipt->children() as $key => $child) {
-            if($child->getName() == "field"){
-                if($child->attributes() == "Date"){
-                    $date = new DateTime($child->value[2].'-'.$child->value[1].'-'.$child->value[0]);   
-                }
-                elseif($child->attributes() == "Address"){
-                    $address = ['Address' => $child->value];
-                }
-                elseif ($child->attributes() == "Total") {
-                    $total = ['Total' => $child->value/100];
-                }
-                elseif ($child->attributes() == "Time") {
-                    $time_purchased[] = [$child->value]; 
-                }
-                elseif ($child->attributes() == "Vendor") {
-                    //$vendor = $child->value;
-                }
-                
-            }
-            elseif($child->getName() == "lineItem"){
-                $lineItems[] = ['name'=> $child->name,'price' => $child->total/100];
-            }
-        }
-
-        $hasDuplicate = $this->hasDuplicateItemNames($lineItems);
-        if($hasDuplicate){
-            $lineItems = $this->getCorrectedNames($lines,$lineItems);
-        }
-        else{
-            //nothing to do
-        }
-        
-       //$vendor = "mariem tabay jr";
          $arrayData =  array(
-            'vendor'     => $vendor,
-            'date'       => $date->format('Y-m-d'),  
-            'items'      => $lineItems,
-            'receipt_no' => $receiptNumber,
-            'recognized' => $recognizedText
+            'vendor'         => $vendor,
+            'receipt_no'     => $receiptNumber,
+            'recognizedText' => $lineArray
          );
-      //echo $response;
-        return view('pages.expenses',['extract'=>$arrayData]); 
+
+
+         return $arrayData; 
     }
     
     function getReceiptNumber($lines){
@@ -254,84 +210,8 @@ class FineReaderController extends Controller
             } 
         } 
         return false; 
-    }  
-
-    function hasDuplicateItemNames($lineItems){
-        //dd($lineItems);
-        $error = false;
-        $names = array();
-        foreach($lineItems as $lineItem){
-            $names[] = (string) $lineItem['name'];
-        }
-        
-        $duplicates = (array_count_values($names));
-        
-        foreach ($duplicates as $key => $duplicate) {
-            if($duplicate > 1) {
-                $error = true;
-            }
-        }
-
-        return $error;
     }
 
-    function getCorrectedNames($lines,$lineItems){
-        $prices = array();
-        foreach ($lineItems as $key => $lineItem) {
-            $prices[] = $lineItem['price'];
-        }
-
-        $pricesSize = sizeof($prices);
-        $linesSize = sizeof($lines);
-
-        $firstOccurenceAtIndex = null;
-
-        for($i=0; $i<$linesSize; $i++) {
-            $str = (string)$prices[0];
-            if (strpos($lines[$i], $str) !== FALSE){
-                $isOK = true;
-                $j = $i;
-                foreach($prices as $price) {
-                    if (strpos($lines[$j], (string)$price) !== FALSE){
-                        //nothing to do for now
-                    }
-                    else{
-                        $isOK = false;
-                    }
-                    $j=($j+2);
-                }
-
-                if($isOK){
-                    $firstOccurenceAtIndex = $i;
-                    break 1;
-                    
-                }
-            }
-     
-
-        }
-        $itemCount = sizeof($lineItems);
-        $itemNames = $this->getItemNameFromUpperLine($firstOccurenceAtIndex,$lines,$itemCount);
-
-        $correctedLineItems = array();
-        for($i=0; $i<$itemCount; $i++) {
-            $correctedLineItems[] = ['name'=>$itemNames[$i], 'price'=>$prices[$i]];
-        }
-        return ($correctedLineItems);
-  
-    }
-
-    function getItemNameFromUpperLine($firstOccurenceAtIndex,$lines,$itemCount){
-        $index = $firstOccurenceAtIndex - 1;
-        $itemNames = array();
-        for($i=0; $i<$itemCount; $i++) {
-            $itemNames[] = trim($lines[$index]);
-            $index = ($index+2);
-        }
-
-        return ($itemNames);
-
-    }
 
  
 }
