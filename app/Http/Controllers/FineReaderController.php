@@ -144,8 +144,6 @@ class FineReaderController extends Controller
         header('Content-Disposition: attachment; filename="file.xml"');*/
     }
 
-    
-    
     function getValues($response){
         $vendors        = new VendorContainer;
         $xml            = simplexml_load_string($response);
@@ -156,7 +154,7 @@ class FineReaderController extends Controller
         $lineItemsArray = $this->getLineItems($lineArray);
         
         $total          = $lineItemsArray['total'];
-       // $items          = $this->getItemNames($lineArray,$lineItemsArray) ;
+        $items          = $this->getItemNames($lineArray,$lineItemsArray) ;
 
         foreach($lineArray as $line) {
             $result = $vendors->find($line);
@@ -170,7 +168,7 @@ class FineReaderController extends Controller
             'receipt_no'     => $receiptNumber,
             'recognizedText' => $lineArray,
             'total'          => $total,
-          // 'items'          => $items
+           'items'          => $items
          );
 
 
@@ -232,6 +230,7 @@ class FineReaderController extends Controller
 
         $possibleTotalValues = array();
         $total = '';
+        $lineItems = '';
         $filters = array(
             'Total',
             'Subtotal',
@@ -306,12 +305,11 @@ class FineReaderController extends Controller
             $result = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
             if($result) {
                 $total = $possibleTotalValue['value'];
+                $lineItems = $possibleItems;
             }
         }
 
-        return ['total'=>$total];
-
-        
+        return ['total'=>$total, 'lineItems'=>$lineItems ];   
     }
 
     function containsField($line){
@@ -343,12 +341,7 @@ class FineReaderController extends Controller
         }
 
         return $found;
-
-        
     }
-
-  
-
 
     function getItemNames($lineArray,$lineItemsArray){
        
@@ -363,13 +356,8 @@ class FineReaderController extends Controller
     }
 
     function isLineItemsEqualTotal($lineArray,$total,$possibleItems) {
-
-      
         $sum = 0;
         $found = false;
-
-
-
         foreach($possibleItems as $item){
 
             $sum+=($item['value']);
