@@ -224,8 +224,11 @@ class FineReaderController extends Controller
         return false; 
     }
 
-    function getLineItems($lineArray){
+ function getLineItems($lineArray){
         $possibleTotalValues = array();
+
+        $total = '';
+
 
         $filters = array(
             'Total',
@@ -281,10 +284,55 @@ class FineReaderController extends Controller
                 
 
             }
+
             echo "<pre>";
             print_r($possibleItems);
             echo "</pre>";
            
+
+
+            $result = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
+            if($result) {
+                $total = $possibleTotalValue['value'];
+            }
+         
+           
+        }
+
+        return ['total'=>$total];
+
+        
+    }
+
+    function filterLineArray($lineArray){
+
+        $filters = array(
+            'sales',
+            'change',
+            'vat',
+            'cash',
+            'thank',
+            'OR No',
+            'OR #',
+            'SI #',
+            'SALES INVOICE NUMBER',
+            'official',
+            'receipt',
+            'item(s)',
+            'items'
+
+            );
+
+        $newLineArray = array();
+
+
+        foreach($lineArray as $key=>$line) {
+            foreach($filters as $filter) {
+                if(strpos(strtolower($line), strtolower($filter) ) !==FALSE){
+                    //$newLineArray[] = $line;
+                    unset($lineArray[$key]);
+                }
+            }
         }
 
 
