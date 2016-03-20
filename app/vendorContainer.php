@@ -3,44 +3,59 @@ namespace App;
 class VendorContainer {
 
 	private $vendorNames = array(
-
-		'Super Metro',
+		"McDonald's South Road",
+		'Super Metro Basak',
 		'Cebu Home Builders',
-		'7-ElEVEN',
+		'7-ELEVEN',
 		'LONGWIN TABUNOK',
 		"Metro Fresh n Easy",
-		"Shopwise",
-		'Ace Hardware'
+		"SHOPWISE BASAK CEBU ",
+		'ACE HARDWARE PHILIPPINES'
 		);
 
-	function find($string) {
+	function findLine($string) {
+		//$string = trim($string);
 		$foundVendor = null;
-
+		$percentageArray = array();
 		foreach($this->vendorNames as $vendorName) {
-
-			$words = explode(' ',$vendorName); //split by space
-			$truthValues = array();
-			foreach($words as $word) {
-				similar_text(strtolower($string), strtolower($word),$percentage);
-				if( ( strpos( strtolower($string), strtolower($word)) !==FALSE ) || $percentage >= 15 ) {
-					$truthValues[] = "yes";
-				}
-				else{
-					$truthValues[] = "no";
-				}
-			}
-			$truthValues = (array_count_values($truthValues));
-			
-			if(array_key_exists('yes',$truthValues) ) {
-				if(sizeof($words) == $truthValues['yes']){
-					$foundVendor = $vendorName;
-				}	
-			}
-			
+			similar_text(strtolower($string), strtolower($vendorName),$percentage);
+			$percentageArray[] = ['vendor'=>$vendorName,'base'=>$string, 'value'=>$percentage];
 		}
+		$possibleVendor = '';
+		$possibleValue = 0;
 
-		return $foundVendor;
+		$percentageArray = array_filter($percentageArray);
+
+		foreach($percentageArray as $result) {
+				$value = $result['value'];
+
+
+				
+				if($value > $possibleValue){
+					$possibleValue = $value;
+					$possibleVendor = $result['vendor'];
+				}
+
+		}
+		
+
+
+		//echo "highest is $possibleVendor with $possibleValue<br>";
+		return $foundVendor = ['vendor'=> $possibleVendor, 'value'=> $possibleValue ] ;
 	}
+
+	function find($lineArray) {
+
+		$greater = 0;
+		$vendor = '';
+		$results = $this->findLine($lineArray);
+		return $vendor = $results['vendor'];
+
+	}
+
+
+
+
 
 	function getAll(){
 

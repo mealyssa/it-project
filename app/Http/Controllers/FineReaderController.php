@@ -156,19 +156,17 @@ class FineReaderController extends Controller
         $total          = $lineItemsArray['total'];
         $items          = $this->getItemNames($lineArray,$lineItemsArray) ;
 
-        foreach($lineArray as $line) {
-            $result = $vendors->find($line);
-            if($result!=null) {
-                $vendor = $result;
-                break;
-            }
-        }
+  
+        $vendorResult = $vendors->find($recognizedText);
+        $vendor = $vendorResult;
+        
+        
          $arrayData =  array(
             'vendor'         => $vendor,
             'receipt_no'     => $receiptNumber,
             'recognizedText' => $lineArray,
             'total'          => $total,
-           'items'          => $items
+            'items'          => $items
          );
 
 
@@ -245,8 +243,8 @@ class FineReaderController extends Controller
 
                     /*extract the float value. example: Total:3.30 will return 3.30*/
                     $value = (  filter_var( $line, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION ) ); 
-                    $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
-                    echo $value."<br>";
+                    $possibleTotalValues[] = ['index'=>$key, 'value'=>abs($value)];
+                   // echo $value."<br>";
                 }
             }
         }
@@ -296,16 +294,22 @@ class FineReaderController extends Controller
 
                  if( $value > 0 ) {
                     $value = str_replace(',', '', $value);
+                    $value = $value;
                     $possibleItems[] = ['index'=>$i, 'value'=>$value];
-                   echo "index $i value $value <br>";
+           
                 }
 
             }
 
             $result = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
-            if($result) {
+            if($result['found']) {
                 $total = $possibleTotalValue['value'];
-                $lineItems = $possibleItems;
+                if($result['line'] == 'double'){
+                    $lineItems =  $this->removeEvenKeys($possibleItems);
+                }
+                else{
+                    $lineItems =  $possibleItems;
+                }
             }
         }
 
@@ -356,16 +360,16 @@ class FineReaderController extends Controller
     }
 
     function isLineItemsEqualTotal($lineArray,$total,$possibleItems) {
+   
         $sum = 0;
-        $found = false;
+        $result = false;
         foreach($possibleItems as $item){
-
             $sum+=($item['value']);
-            echo "sum $sum";
         }
-        
-        if($sum == $total['value']){ //true if items are one-liner
-            $found = true;
+      
+        if($sum == $total['value'] ){ //true if items are one-liner
+            $result['found'] = true;
+            $result['line'] = "single";
         }
         else{
             $sum = 0;
@@ -376,21 +380,33 @@ class FineReaderController extends Controller
                 $i++;
             }
            
-            if($sum == $total['value']){ //true if items are two-liner
-                $found = true;
+            if($sum ==$total['value']){ //true if items are two-liner
+                $result['found'] = true;
+                $result['line'] = 'double';
             }
         }
 
 
-        if($found) {
-            echo "found";
-        }
-        else{
-            echo "not found";
-        }
-
-        return $found;
+  
+        return $result;
     }
+
+    function removeEvenKeys($values) {
+       $newValues = array();
+        foreach($values as $key=>$value) {
+            if($key % 2 == 0){
+                $newValues[] = $value;
+            }
+        }
+     
+     
+       
+        return $newValues;
+    }
+
+
+
+
 
 
  
