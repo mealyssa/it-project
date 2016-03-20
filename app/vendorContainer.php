@@ -10,7 +10,8 @@ class VendorContainer {
 		'LONGWIN TABUNOK',
 		"Metro Fresh n Easy",
 		"SHOPWISE BASAK CEBU ",
-		'ACE HARDWARE PHILIPPINES'
+		'ACE HARDWARE PHILIPPINES',
+		'robinsons department store'
 		);
 
 	function findLine($string) {
