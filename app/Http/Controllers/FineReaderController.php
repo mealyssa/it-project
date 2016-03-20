@@ -228,7 +228,7 @@ class FineReaderController extends Controller
         return false; 
     }
 
- function getLineItems($lineArray){
+    function getLineItems($lineArray){
 
         $possibleTotalValues = array();
         $total = '';
@@ -296,6 +296,7 @@ class FineReaderController extends Controller
                  }
 
                  if( $value > 0 ) {
+                    $value = str_replace(',', '', $value);
                     $possibleItems[] = ['index'=>$i, 'value'=>$value];
                    echo "index $i value $value <br>";
                 }
@@ -362,12 +363,17 @@ class FineReaderController extends Controller
     }
 
     function isLineItemsEqualTotal($lineArray,$total,$possibleItems) {
-        
+
+      
         $sum = 0;
         $found = false;
 
+
+
         foreach($possibleItems as $item){
+
             $sum+=($item['value']);
+            echo "sum $sum";
         }
         
         if($sum == $total['value']){ //true if items are one-liner
@@ -385,6 +391,14 @@ class FineReaderController extends Controller
             if($sum == $total['value']){ //true if items are two-liner
                 $found = true;
             }
+        }
+
+
+        if($found) {
+            echo "found";
+        }
+        else{
+            echo "not found";
         }
 
         return $found;

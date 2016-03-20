@@ -19949,3 +19949,6 @@ Stack trace:
 #51 C:\Users\RJ Xirc\Desktop\IT-project\public\index.php(54): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
 #52 C:\Users\RJ Xirc\Desktop\IT-project\server.php(21): require_once('C:\\Users\\RJ Xir...')
 #53 {main}  
+[2016-03-20 03:52:57] local.ERROR: exception 'Symfony\Component\Debug\Exception\FatalErrorException' with message 'syntax error, unexpected '$possibleItems' (T_VARIABLE)' in C:\Users\RJ Xirc\Desktop\IT-project\app\Http\Controllers\FineReaderController.php:300
+Stack trace:
+#0 {main}  
