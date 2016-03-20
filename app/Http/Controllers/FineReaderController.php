@@ -135,6 +135,7 @@ class FineReaderController extends Controller
         $response = curl_exec($curlHandle);
         curl_close($curlHandle);
     
+        
         $arrayData = $this->getValues($response);
         dd($arrayData);
 
@@ -148,12 +149,14 @@ class FineReaderController extends Controller
     function getValues($response){
         $vendors        = new VendorContainer;
         $xml            = simplexml_load_string($response);
+        $vendor         = null;
         $recognizedText = $xml->receipt->recognizedText;
         $lineArray      = explode("\n", $recognizedText);
         $receiptNumber  = $this->getReceiptNumber($lineArray);
-        //$lineItemsArray = $this->getLineItems($lineArray);
-        $vendor         = null;
-        $this->getLineItems($lineArray);
+        $lineItemsArray = $this->getLineItems($lineArray);
+        
+        $total          = $lineItemsArray['total'];
+       // $items          = $this->getItemNames($lineArray,$lineItemsArray) ;
 
         foreach($lineArray as $line) {
             $result = $vendors->find($line);
@@ -166,7 +169,8 @@ class FineReaderController extends Controller
             'vendor'         => $vendor,
             'receipt_no'     => $receiptNumber,
             'recognizedText' => $lineArray,
-            //'lineItems'      => $lineItemsArray
+            'total'          => $total,
+          // 'items'          => $items
          );
 
 
@@ -226,70 +230,172 @@ class FineReaderController extends Controller
 
     function getLineItems($lineArray){
         $possibleTotalValues = array();
+        $total = '';
+        $lineItems = '';
 
         $filters = array(
             'Total',
             'Subtotal',
-            'Sub-total'
+            'Sub-total',
+            'Amount due'
         );
 
         /*find all lines containing the total field*/
         foreach($lineArray as $key=>$line) {
             foreach($filters as $filter) {
-                if( strpos( strtolower($line), strtolower($filter)) !==FALSE ) {
+               
+               
+                if( strpos( strtolower($line), strtolower($filter)) !==FALSE) {
 
-                    /*extract the float value. example: Total:3.30 will return 3.30*/
                     $value = (  filter_var( $line, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION ) ); 
-                    $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
-                    echo $value."<br>";
+                    $split = explode('.',floatval($value));
+                   // if(sizeof($split) == 2 && strlen($split[1])<=3 ){
+                        $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
+                        echo $key.' and '.$value.'<br>';
+                   // }
+                    
                 }
             }
         }
 
         foreach( $possibleTotalValues as $possibleTotalValue) {
+
+
+
             $index = $possibleTotalValue['index'];
             $possibleItems = array();
+      
 
             for($i=0; $i<$index; $i++) {
 
                  $words = explode(' ',$lineArray[$i]);
+                 $this->filterLineArray($lineArray);
                  $value = '';
                  $split = '';
 
                  foreach($words as $word){
-                    if( strpos($word,'.' ) !==FALSE ){
-                        $split = explode('.',$word);
-                        if(sizeof($split) == 2 && strlen($split[1])==2 ){
-                             $value = $word;
+
+                    /*tarungon pa ang length para decimal */
+         
+
+                        if( strpos($word,'.' ) !==FALSE ){
+                            $split = explode('.',floatval($word));
+                            if(sizeof($split) == 2 && strlen($split[1])==2 ){
+                                 $value = floatval($word);
+                            }
                         }
-                       
-                    }
-                    elseif( strpos($word,',' ) !==FALSE){
-                        $split = explode(',',$word);
-                        if(sizeof($split) == 2 && strlen($split[1])==2){
-                             $value = $word;
+                        elseif( strpos($word,',' ) !==FALSE){
+                            $split = explode(',',floatval($word));
+                            if(sizeof($split) == 2 && strlen($split[1])==2){
+                                 $value = floatval($word);
+                            }
                         }
-                    }
 
                     
 
                  }
 
                  if( $value > 0 ) {
+                    $value = str_replace(',', '.', $value);
                     $possibleItems[] = ['index'=>$i, 'value'=>$value];
+                    echo "<br> index $i value $value<br>";
+                   
                 }
-                
 
             }
-            echo "<pre>";
-            print_r($possibleItems);
-            echo "</pre>";
+
+            $found = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
+            if($found){
+                $total = $possibleTotalValue['value'];
+                $lineItems = $possibleItems;
+
+            }
+        }  
+
+        return ['total'=>$total, 'lineItems'=>$lineItems];  
+    }
+
+    function filterLineArray($lineArray){
+
+        $filters = array(
+            'sales',
+            'change',
+            'vat',
+            'cash',
+            'thank',
+            'OR No',
+            'OR #',
+            'SI #',
+            'SALES INVOICE NUMBER',
+            'official',
+            'receipt',
+            'item(s)',
+            'items'
+
+            );
+
+        $newLineArray = array();
+
+
+        foreach($lineArray as $key=>$line) {
+            foreach($filters as $filter) {
+                if(strpos(strtolower($line), strtolower($filter) ) !==FALSE){
+                    //$newLineArray[] = $line;
+                    unset($lineArray[$key]);
+                }
+            }
+        }
+  
+       /* echo "remove<br>";
+        echo "<pre>";
+        print_r($lineArray);
+        echo "</pre>";*/
+        return $newLineArray;
+
+    }
+
+
+    function getItemNames($lineArray,$lineItemsArray){
+       
+        $lines = array();
+        foreach($lineItemsArray['lineItems'] as $item){
+
+            $lineIndex = $item['index'];
+            $lines[] = $lineArray[$lineIndex];
+
+        }
+        return $lines;
+    }
+
+    function isLineItemsEqualTotal($lineArray,$total,$possibleItems) {
+        
+        $sum = 0;
+        $found = false;
+
+        foreach($possibleItems as $item){
+            $sum+=($item['value']);
+        }
+        
+        if($sum == $total['value']){ //true if items are one-liner
+            $found = true;
+        }
+        else{
+            $sum = 0;
+
+            for($i=0; $i<sizeof($possibleItems); $i++) {
+                $item = $possibleItems[$i];
+                $sum+=($item['value']);
+                $i++;
+            }
            
+            if($sum == $total['value']){ //true if items are two-liner
+                $found = true;
+            }
         }
 
+        echo "sum $sum";
 
-
-        
+        return $found;
     }
 
 
