@@ -228,91 +228,76 @@ class FineReaderController extends Controller
         return false; 
     }
 
-    function getLineItems($lineArray){
+ function getLineItems($lineArray){
         $possibleTotalValues = array();
         $total = '';
-        $lineItems = '';
 
         $filters = array(
             'Total',
             'Subtotal',
-            'Sub-total',
-            'Amount due'
+            'Sub-total'
         );
 
         /*find all lines containing the total field*/
         foreach($lineArray as $key=>$line) {
             foreach($filters as $filter) {
-               
-               
-                if( strpos( strtolower($line), strtolower($filter)) !==FALSE) {
+                if( strpos( strtolower($line), strtolower($filter)) !==FALSE ) {
 
+                    /*extract the float value. example: Total:3.30 will return 3.30*/
                     $value = (  filter_var( $line, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION ) ); 
-                    $split = explode('.',floatval($value));
-                   // if(sizeof($split) == 2 && strlen($split[1])<=3 ){
-                        $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
-                        echo $key.' and '.$value.'<br>';
-                   // }
-                    
+                    $possibleTotalValues[] = ['index'=>$key, 'value'=>$value];
+                    echo $value."<br>";
                 }
             }
         }
 
         foreach( $possibleTotalValues as $possibleTotalValue) {
-
-
-
             $index = $possibleTotalValue['index'];
             $possibleItems = array();
-      
 
             for($i=0; $i<$index; $i++) {
 
                  $words = explode(' ',$lineArray[$i]);
-                 $this->filterLineArray($lineArray);
                  $value = '';
                  $split = '';
 
                  foreach($words as $word){
-
-                    /*tarungon pa ang length para decimal */
-         
-
-                        if( strpos($word,'.' ) !==FALSE ){
-                            $split = explode('.',floatval($word));
-                            if(sizeof($split) == 2 && strlen($split[1])==2 ){
-                                 $value = floatval($word);
-                            }
+                    if( strpos($word,'.' ) !==FALSE ){
+                        $split = explode('.',$word);
+                        if(sizeof($split) == 2 && strlen($split[1])==2 ){
+                             $value = $word;
                         }
-                        elseif( strpos($word,',' ) !==FALSE){
-                            $split = explode(',',floatval($word));
-                            if(sizeof($split) == 2 && strlen($split[1])==2){
-                                 $value = floatval($word);
-                            }
+                       
+                    }
+                    elseif( strpos($word,',' ) !==FALSE){
+                        $split = explode(',',$word);
+                        if(sizeof($split) == 2 && strlen($split[1])==2){
+                             $value = $word;
                         }
+                    }
 
                     
 
                  }
 
                  if( $value > 0 ) {
-                    $value = str_replace(',', '.', $value);
                     $possibleItems[] = ['index'=>$i, 'value'=>$value];
-                    echo "<br> index $i value $value<br>";
-                   
                 }
+                
 
             }
 
-            $found = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
-            if($found){
+            $result = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
+            if($result) {
                 $total = $possibleTotalValue['value'];
-                $lineItems = $possibleItems;
-
             }
-        }  
+         
+           
+        }
 
-        return ['total'=>$total, 'lineItems'=>$lineItems];  
+        return ['total'=>$total];
+
+        
     }
 
     function filterLineArray($lineArray){
