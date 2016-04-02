@@ -13,20 +13,15 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::get('/home','HomeController@homePage');
     Route::post('home/uploadReceipts','ReceiptsController@upload');
-    Route::get('/expense/receipts/extractedData','FineReaderController@extract');
+    Route::get('/expense/receipts/extractedData','FineReaderController@sendToOCR');
 
-    
-    Route::get('/expenses',function(){
-	   return view('pages.expenses');
-    });
+
     
     Route::get('/about',function(){
         return view('pages.about');    
     });
     
-    Route::get('/expenses',function(){
-        return view('pages.expenses');
-    });
+    Route::get('/expenses','ReceiptsController@expenses');
 
     Route::get('/liquidation',function(){
         return view('pages.liquidation');

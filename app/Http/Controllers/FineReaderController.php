@@ -14,12 +14,11 @@ use App\vendorContainer;
 class FineReaderController extends Controller
 {
 
-    function extract(){
+    //
+    function extract( $image_name ){
 
-        $image_name = session::get('session_ImageName');
-        
-        $applicationId = 'extrak receipt scanner2';
-        $password = 'nocLEqMkht7O/LDcou0mA62T';
+        $applicationId = 'extrack receipts';
+        $password = 'SxwbCyz0Qa6APg3ZH/P9LOSR';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -134,280 +133,184 @@ class FineReaderController extends Controller
         curl_setopt($curlHandle, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($curlHandle);
         curl_close($curlHandle);
-    
         
-        $arrayData = $this->getValues($response);
-        dd($arrayData);
+        return $response;
 
         //return view('pages.expenses',['extract'=>$arrayData]); 
         /*header('Content-type: application/xml');
         header('Content-Disposition: attachment; filename="file.xml"');*/
     }
 
-    function getValues($response){
-        $vendors        = new VendorContainer;
-        $xml            = simplexml_load_string($response);
-        $vendor         = null;
-        $recognizedText = $xml->receipt->recognizedText;
-        $lineArray      = explode("\n", $recognizedText);
-        $receiptNumber  = $this->getReceiptNumber($lineArray);
-        $lineItemsArray = $this->getLineItems($lineArray);
-        
-        $total          = $lineItemsArray['total'];
-        $items          = $this->getItemNames($lineArray,$lineItemsArray) ;
 
-  
-        $vendorResult = $vendors->find($recognizedText);
-        $vendor = $vendorResult;
-        
-        
-         $arrayData =  array(
-            'vendor'         => $vendor,
-            'receipt_no'     => $receiptNumber,
-            'recognizedText' => $lineArray,
-            'total'          => $total,
-            'items'          => $items
+    function sendToOCR () {
+        $image_name = session::get('session_ImageName');
+        $response = $this->extract($image_name);
+
+        $xml = simplexml_load_string($response);
+        $recognizedText = $xml->receipt->recognizedText;
+        $lineArray = explode("\n",$recognizedText);
+        $merchant = $this->getMerchant($lineArray);
+        $or_number = $this->getOR($lineArray);
+        $total = $this->getTotal($lineArray);
+
+        $arrayData =  array(
+            'vendor'         => $merchant,
+            'receipt_no'     => $or_number,
+            'recognizedText' => '',
+            'total'          => '',
+            'items'          => [],
+            'date'           => ''
          );
 
+        Session::flash('session_ImageName',$image_name);
+        Session::flash('arrayData', $arrayData);
+        return redirect('expenses');
+       // return view('pages.expenses',['extract'=>$arrayData, 'fromUpload'=>true]); 
 
-         return $arrayData; 
     }
-    
-    function getReceiptNumber($lines){
-        $receipt_number = null;
+
+    function getMerchant($lineArray){
+        $threshold = 80.00;
+        $merchant = null;
 
         $filters = [
-            'OR No',
-            'OR #',
-            'SI #',
-            'SALES INVOICE NUMBER'
-        ];
-        
-        foreach($lines as $index=>$line) {
-            foreach($filters as $filter) {
-                if (strpos($line, $filter) !== false) {
+            "Shopwise Basak Cebu",
+            "Super Metro Basak",
+            "Gaisano Tabunok",
+            "ACE HARDWARE PHILIPPINES, INC",
+            "Cebu Home & Builders Centre",
+            "McDonald's South Road",
+            "Robinsons Place Cebu",
+            "7-Eleven",
+            "Fooda Saversmart",
+            "Gaisano Tabunok",
+            "KFC Cebu IT Park",
+            "Your Life Pharmacy",
+            "Cebu's Original Lechon Belly",
+            "Metro Fresh and Easy Punta"
 
-                    $rightof_keyword = substr( $line, strpos( $line, $filter) + strlen($filter) );
-                    $texts = array_filter(explode(' ',$rightof_keyword));
-                    foreach($texts as $text) {
-                        if(is_numeric($text)){
-                            $receipt_number = $text;
-                            break 3;
-                        }
-                        elseif($this->isNumericWithDash($text)) {
-                            $receipt_number = $text;
-                            break 3;
-                        }
-                    } 
+
+            ];
+
+        $greater = 0;
+
+
+        foreach ($lineArray as $key=>$line) {
+
+            $base = trim(strtolower($line));
+
+            foreach($filters as $filter) {
+
+                $newfilter = strtolower($filter);
+                //$find = strpos($base, $newfilter );
+                similar_text($base, $newfilter,$percentage);
+
+                //echo "$base ------ $newfilter <b>$percentage</b> <br>";
+
+                if($percentage > $greater && $percentage > $threshold) {
+                    $greater = $percentage;
+                    $merchant = $filter;
+                }
+            }
+           
+        }
+        echo $merchant;
+        return $merchant;
+    }
+
+    function getOR($lineArray){
+        $receiptNo = null;
+        $found = false;
+        $foundBase =null;
+        $foundFilter = null;
+
+
+
+        $filters = [
+            "OR No",
+            "OR #",
+            "SI #",
+            "SI No",
+            "SALES INVOICE NUMBER",
+            "Official Receipt #",
+            "OR#",
+            "Sales Invoice#",
+            "O.R.",
+          
+
+            ];
+        $words = null;
+        foreach ($lineArray as $key => $line) {
+            
+            foreach ($filters as $key => $filter) {
+                $line = str_replace($filter, $filter." ", $line);
+                $newfilter = ($filter);
+                $base = ($line);
+                $find = strpos($base, $newfilter);
+               // echo "$base -- $newfilter <br>";
+               
+                if ($find !==FALSE) {
+                    
+                   $found = TRUE;
+                   $foundBase = $base;
+                   $foundFilter = $newfilter;
+                 
+                }
+                
+            }
+
+        }
+
+        
+        if($found) {
+          
+            $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
+            $texts =  array_filter(explode(' ', $rightof_keyword));
+
+            foreach ($texts as $key => $text) {
+                $text = trim( str_replace(".", "", $text) );
+                $resultWithDash = $this->isNumericWithDash($text);
+                $resultNumeric = is_numeric($text);
+                if ($resultWithDash || $resultNumeric) {
+                    $receiptNo = $text;
+                    break;
                 }
             }
         }
-        
-        return ($receipt_number);
+
+        echo $receiptNo;
+       return $receiptNo;
     }
 
     function isNumericWithDash($string){ 
-        if (('-' == substr($string, 2, 1)) || ('-' == substr($string, 3, 1))) { 
+        
             if (is_numeric(str_replace('-', '', $string))) { 
                 return true; 
             } 
-        } 
+        
         return false; 
     }
 
     function isNumericWithComma($string){ 
-        if ((',' == substr($string, 2, 1)) || (',' == substr($string, 3, 1))) { 
-            if (is_numeric(str_replace('-', '', $string))) { 
+     
+            if (is_numeric(str_replace(',', '', $string))) { 
+                return true; 
+            } 
+        
+        return false; 
+    }
+
+    function isNumericWithDot($string){
+        if (('.' == substr($string, 2, 1)) || ('.' == substr($string, 3, 1))) { 
+            if (is_numeric(str_replace('.', '', $string))) { 
                 return true; 
             } 
         } 
         return false; 
     }
 
-    function getLineItems($lineArray){
-
-        $possibleTotalValues = array();
-        $total = '';
-        $lineItems = '';
-        $filters = array(
-            'Total',
-            'Subtotal',
-            'Sub-total',
-            'total amount'
-        );
-
-        /*find all lines containing the total field*/
-        foreach($lineArray as $key=>$line) {
-            foreach($filters as $filter) {
-                if( strpos( strtolower($line), strtolower($filter)) !==FALSE ) {
-
-                    /*extract the float value. example: Total:3.30 will return 3.30*/
-                    $value = (  filter_var( $line, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION ) ); 
-                    $possibleTotalValues[] = ['index'=>$key, 'value'=>abs($value)];
-                   // echo $value."<br>";
-                }
-            }
-        }
-
-        //mangita item
-        foreach( $possibleTotalValues as $possibleTotalValue) {
-            $index = $possibleTotalValue['index'];
-            $possibleItems = array();
-           
-            for($i=0; $i<$index; $i++) {
-                $ignored = '';
-                 $words = explode(' ',$lineArray[$i]);
-                 $value = '';
-                 $split = '';
-
-              
-
-                 if($this->containsField($lineArray[$i]) ) {
-                    $ignored = true;
-                 }
-                 else{
-                    $ignored = false;
-                 }
-
-                
-                 if(!$ignored) {
-                     foreach($words as $word){
-
-                        $found = ( $this->containsField($word) ) ;
-                         
-                            
-                            if( strpos($word,'.' ) !==FALSE ){
-                                $split = explode('.',$word);
-                                if(sizeof($split) == 2 && ( strlen($split[1])==2 || strlen($split[1])==3 ) ){ //mu explode then dapat 2 ra ang decimal place
-                                     $value = $word; 
-                                }
-                               
-                            }
-                            elseif( strpos($word,',' ) !==FALSE){
-                                $split = explode(',',$word);
-                                if(sizeof($split) == 2 && ( strlen($split[1])==2 || strlen($split[1])==3 ) ){
-                                     $value = $word;
-                                }
-                            }
-                     }
-                 }
-
-                 if( $value > 0 ) {
-                    $value = str_replace(',', '', $value);
-                    $value = $value;
-                    $possibleItems[] = ['index'=>$i, 'value'=>$value];
-           
-                }
-
-            }
-
-            $result = $this->isLineItemsEqualTotal($lineArray,$possibleTotalValue,$possibleItems);
-            if($result['found']) {
-                $total = $possibleTotalValue['value'];
-                if($result['line'] == 'double'){
-                    $lineItems =  $this->removeEvenKeys($possibleItems);
-                }
-                else{
-                    $lineItems =  $possibleItems;
-                }
-            }
-        }
-
-        return ['total'=>$total, 'lineItems'=>$lineItems ];   
-    }
-
-    function containsField($line){
-        $found = false;
-        $filters = array(
-            'change',
-            'sales',
-            
-            'vat',
-            'cash',
-            'thank',
-            'OR No',
-            'OR #',
-            'SI #',
-            'SALES INVOICE NUMBER',
-            'official',
-            'receipt',
-            'item(s)',
-            'items',
-            'total',
-            'amount'
-
-            );
-
-        foreach($filters as $filter) {
-            if( strpos(strtolower($line),strtolower($filter) ) !==FALSE  ) {
-                $found = true;
-            }
-        }
-
-        return $found;
-    }
-
-    function getItemNames($lineArray,$lineItemsArray){
-       
-        $lines = array();
-        foreach($lineItemsArray['lineItems'] as $item){
-
-            $lineIndex = $item['index'];
-            $lines[] = $lineArray[$lineIndex];
-
-        }
-        return $lines;
-    }
-
-    function isLineItemsEqualTotal($lineArray,$total,$possibleItems) {
-   
-        $sum = 0;
-        $result = false;
-        foreach($possibleItems as $item){
-            $sum+=($item['value']);
-        }
-      
-        if($sum == $total['value'] ){ //true if items are one-liner
-            $result['found'] = true;
-            $result['line'] = "single";
-        }
-        else{
-            $sum = 0;
-
-            for($i=0; $i<sizeof($possibleItems); $i++) {
-                $item = $possibleItems[$i];
-                $sum+=($item['value']);
-                $i++;
-            }
-           
-            if($sum ==$total['value']){ //true if items are two-liner
-                $result['found'] = true;
-                $result['line'] = 'double';
-            }
-        }
-
-
-  
-        return $result;
-    }
-
-    function removeEvenKeys($values) {
-       $newValues = array();
-        foreach($values as $key=>$value) {
-            if($key % 2 == 0){
-                $newValues[] = $value;
-            }
-        }
-     
-     
-       
-        return $newValues;
+    function getTotal($lineArray){
     }
 
 
-
-
-
-
- 
 }

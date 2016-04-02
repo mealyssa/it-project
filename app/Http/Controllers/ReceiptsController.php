@@ -49,8 +49,14 @@ class ReceiptsController extends Controller
 
       $receipts->save(); 
 
-      Session::put('session_ImageName',$hashedFilename.'.'.$extension);
+      Session::flash('session_ImageName',$hashedFilename.'.'.$extension);
       return redirect('/expense/receipts/extractedData');
     }
+  }
+
+  public function expenses(){
+
+    $arrayData = session::get('arrayData');
+     return view('pages.expenses',['extract'=>$arrayData]);
   }
 }
