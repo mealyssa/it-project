@@ -156,10 +156,13 @@
                                                 <input type="text" class="form-control" value="<?php echo e($extract['receipt_no']); ?>" id="dataExtract" disabled="disable"> 
 
                                                 <label>Date of Purchased:</label>
-                                                <input type="text" value="<?php echo e($extract['date']); ?>" class="form-control" disabled="disable"> 
-
+                                                <input type="text" value="<?php echo e($extract['date_purchased']); ?>" class="form-control" disabled="disable"> 
                                                 <label>Place of Purchased:</label>
-                                                <input type="text" value="" class="form-control" id="dataExtract" disabled="disable">   
+                                                <input type="text" value="<?php echo e($extract['place_purchased']); ?>" class="form-control" disabled="disable"> 
+                                                
+                                                <label>Total Due:</label>
+                                                <input type="text" value="<?php echo e($extract['total']); ?>" class="form-control" disabled="disable"> 
+  
                                             </div>
                                         </div>
 

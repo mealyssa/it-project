@@ -14,7 +14,6 @@ use App\vendorContainer;
 class FineReaderController extends Controller
 {
 
-    //
     function extract( $image_name ){
 
         $applicationId = 'extrack receipts';
@@ -152,12 +151,17 @@ class FineReaderController extends Controller
         $merchant = $this->getMerchant($lineArray);
         $or_number = $this->getOR($lineArray);
         $total = $this->getTotal($lineArray);
+        $date_purchased = $this->getDatePurchased($lineArray);
+        $place_purchased = $this->getPlacePurchased($lineArray);
+        $items = $this->getItems($lineArray,$total['index']);
 
         $arrayData =  array(
             'vendor'         => $merchant,
             'receipt_no'     => $or_number,
+            'date_purchased' => $date_purchased,
+            'place_purchased'=> $place_purchased,
             'recognizedText' => '',
-            'total'          => '',
+            'total'          => $total['value'],
             'items'          => [],
             'date'           => ''
          );
@@ -166,10 +170,10 @@ class FineReaderController extends Controller
         Session::flash('arrayData', $arrayData);
         return redirect('expenses');
        // return view('pages.expenses',['extract'=>$arrayData, 'fromUpload'=>true]); 
-
     }
 
     function getMerchant($lineArray){
+
         $threshold = 80.00;
         $merchant = null;
 
@@ -191,9 +195,7 @@ class FineReaderController extends Controller
 
 
             ];
-
         $greater = 0;
-
 
         foreach ($lineArray as $key=>$line) {
 
@@ -202,11 +204,7 @@ class FineReaderController extends Controller
             foreach($filters as $filter) {
 
                 $newfilter = strtolower($filter);
-                //$find = strpos($base, $newfilter );
                 similar_text($base, $newfilter,$percentage);
-
-                //echo "$base ------ $newfilter <b>$percentage</b> <br>";
-
                 if($percentage > $greater && $percentage > $threshold) {
                     $greater = $percentage;
                     $merchant = $filter;
@@ -214,7 +212,6 @@ class FineReaderController extends Controller
             }
            
         }
-        echo $merchant;
         return $merchant;
     }
 
@@ -224,21 +221,19 @@ class FineReaderController extends Controller
         $foundBase =null;
         $foundFilter = null;
 
-
-
         $filters = [
-            "OR No",
-            "OR #",
-            "SI #",
-            "SI No",
-            "SALES INVOICE NUMBER",
-            "Official Receipt #",
-            "OR#",
-            "Sales Invoice#",
-            "O.R.",
-          
 
+                "OR No",
+                "OR #",
+                "SI #",
+                "SI No",
+                "SALES INVOICE NUMBER",
+                "Official Receipt #",
+                "OR#",
+                "Sales Invoice#",
+                "O.R.",
             ];
+
         $words = null;
         foreach ($lineArray as $key => $line) {
             
@@ -247,8 +242,6 @@ class FineReaderController extends Controller
                 $newfilter = ($filter);
                 $base = ($line);
                 $find = strpos($base, $newfilter);
-               // echo "$base -- $newfilter <br>";
-               
                 if ($find !==FALSE) {
                     
                    $found = TRUE;
@@ -260,8 +253,6 @@ class FineReaderController extends Controller
             }
 
         }
-
-        
         if($found) {
           
             $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
@@ -278,39 +269,198 @@ class FineReaderController extends Controller
             }
         }
 
-        echo $receiptNo;
        return $receiptNo;
     }
 
     function isNumericWithDash($string){ 
-        
-            if (is_numeric(str_replace('-', '', $string))) { 
-                return true; 
-            } 
-        
+
+        if (is_numeric(str_replace('-', '', $string))) { 
+            return true; 
+        } 
+
         return false; 
     }
 
     function isNumericWithComma($string){ 
      
-            if (is_numeric(str_replace(',', '', $string))) { 
-                return true; 
-            } 
-        
+        if (is_numeric(str_replace(',', '', $string))) { 
+            return true; 
+        } 
+
         return false; 
     }
 
     function isNumericWithDot($string){
-        if (('.' == substr($string, 2, 1)) || ('.' == substr($string, 3, 1))) { 
-            if (is_numeric(str_replace('.', '', $string))) { 
-                return true; 
-            } 
+      
+        if (is_numeric(str_replace('.', '', $string))) { 
+            return true; 
         } 
         return false; 
     }
 
     function getTotal($lineArray){
+        $indexOfTotal = 0;
+        $total = 0.00;
+        $totalIndeces = [];
+        $filters = [
+         'Total',
+        'Total amount',
+        'Amount due'
+        ];
+
+        $removeFilters = [
+            'Total Tender',
+            'Total Items',
+            'Vat',
+            'Sales',
+            'Subtotal',
+            'Change'
+
+        ];
+
+
+        foreach($lineArray as $key=>$line) {
+            $base = strtolower($line);
+            foreach ($removeFilters as  $filter) {
+                $newfilter = strtolower($filter);
+                $find = strpos($base, $newfilter);
+                if ($find!==FALSE) {
+                    unset($lineArray[$key]);
+                }
+
+            }
+
+        }
+
+
+        foreach ($lineArray as $key => $line) {
+            
+            $base = strtolower($line);
+            foreach ($filters as  $filter) {
+               $newfilter = strtolower($filter);
+
+               $find = strpos($base, $newfilter);
+
+               if ($find!==FALSE) {
+                    $totalIndeces[] = $key;
+               }
+            }
+        }
+
+
+        foreach($totalIndeces as $index) {
+
+            $line = $lineArray[$index];
+            $newline = preg_replace("/[^0-9]/","",$line);
+            $total = number_format((float)$newline/100, 2, '.', '');
+            $indexOfTotal = $index;
+
+
+
+        }
+        return ['value'=>$total, 'index'=>$indexOfTotal];
+
     }
+    function getDatePurchased($lineArray){
+        $date_purchased = null;
+        $month =null;
+        $day = null;
+        $year = null;
+       $pattern1 = "/\d{2}\/\d{2}\/\d{4}/";
+       $pattern2 = "/\d{1}\/\d{2}\/\d{2}/";
+       $pattern3 = "/\d{2}\-\d{2}\-\d{4}/";
+       $pattern4 = "/(\w+) (\d{1,2}), (\d{4})/";
+       $removeFilters = [
+            'issued on',
+            'valid until'
+       ];
+
+       $filters = [
+            '01' => 'January',
+            '02' => 'February',
+            '03' => 'March',
+            '04' => 'April',
+            '05' => 'May',
+            '06' => 'June',
+            '07' => 'July',
+            '08' => 'August',
+            '09' => 'September',
+            '10' => 'October',
+            '11' => 'November',
+            '12' => 'December'
+        ];
+
+        foreach ($lineArray as $key => $line) {
+            $base = strtolower($line);
+            foreach ($removeFilters as $removeFilter) {
+                $newFilterRemove = strtolower($removeFilter);
+
+                $foundFilter = strpos($line,$newFilterRemove);
+                if ($foundFilter!==FALSE) {
+                    unset($lineArray[$key]);
+
+                }
+                else{
+                  
+                }
+            }
+        }
+        foreach ($lineArray as $key => $line) {
+            if (preg_match($pattern1, $line, $matches)) {
+               $date_purchased = $matches[0];
+            }
+            elseif (preg_match($pattern2,$line,$matches)) {
+                $date_purchased = $matches[0];
+            }
+            elseif (preg_match($pattern3,$line,$matches)) {
+                $date_purchased = $matches[0];
+            }
+            elseif(preg_match($pattern4, $line,$matches)){
+                $date_purchased = $matches[0];
+              
+            }      
+        }
+        return $date_purchased;
+    }
+    function getPlacePurchased($lineArray){
+        $place_purchased = [];
+        $filters = [
+            'St.',
+            'Street',
+            'North',
+            'South',
+            'Road',
+            'City',
+        ];
+
+        $firstTenLines = array();
+        for ($i=1; $i < 10; $i++) { 
+            $firstTenLines[] = $lineArray[$i];
+        }
+        foreach ($firstTenLines as $key => $line) {
+            $base = strtolower($line);
+            foreach ($filters as $key => $filter) {
+                $newfilter = strtolower($filter);
+                $foundKeyAddress = strpos($base,$newfilter);
+                if($foundKeyAddress!==FALSE){
+                    $place_purchased = trim($line);
+                    break;
+                }
+               
+            }
+        }
+
+        return $place_purchased;
+    }
+
+    function getItems($lineArray,$index){
+        $newArray = array();
+        for ($i=0; $i <= $index; $i++) { 
+            $newArray [] = str_replace('.', '', $lineArray[$i]);
+        }
+
+        dd($newArray);
+    } 
 
 
 }

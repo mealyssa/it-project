@@ -161,10 +161,13 @@
                                                 <input type="text" class="form-control" value="{{ $extract['receipt_no'] }}" id="dataExtract" disabled="disable"> 
 
                                                 <label>Date of Purchased:</label>
-                                                <input type="text" value="{{ $extract['date'] }}" class="form-control" disabled="disable"> 
-
+                                                <input type="text" value="{{ $extract['date_purchased'] }}" class="form-control" disabled="disable"> 
                                                 <label>Place of Purchased:</label>
-                                                <input type="text" value="" class="form-control" id="dataExtract" disabled="disable">   
+                                                <input type="text" value="{{ $extract['place_purchased'] }}" class="form-control" disabled="disable"> 
+                                                
+                                                <label>Total Due:</label>
+                                                <input type="text" value="{{ $extract['total'] }}" class="form-control" disabled="disable"> 
+  
                                             </div>
                                         </div>
 
