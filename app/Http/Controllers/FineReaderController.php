@@ -145,9 +145,14 @@ class FineReaderController extends Controller
         $image_name = session::get('session_ImageName');
         $response = $this->extract($image_name);
 
+
+
         $xml = simplexml_load_string($response);
         $recognizedText = $xml->receipt->recognizedText;
+
         $lineArray = explode("\n",$recognizedText);
+
+
         $merchant = $this->getMerchant($lineArray);
         $or_number = $this->getOR($lineArray);
         $total = $this->getTotal($lineArray);
@@ -162,7 +167,7 @@ class FineReaderController extends Controller
             'place_purchased'=> $place_purchased,
             'recognizedText' => '',
             'total'          => $total['value'],
-            'items'          => [],
+            'items'          => $items,
             'date'           => ''
          );
 
@@ -454,13 +459,61 @@ class FineReaderController extends Controller
     }
 
     function getItems($lineArray,$index){
-        $newArray = array();
-        for ($i=0; $i <= $index; $i++) { 
-            $newArray [] = str_replace('.', '', $lineArray[$i]);
+
+
+        $removeFilters = [
+            'VAT',
+        ];
+
+
+        foreach($lineArray as $key=>$line) {
+            $base = strtolower($line);
+            foreach ($removeFilters as  $filter) {
+                $newfilter = strtolower($filter);
+                $find = strpos($base, $newfilter);
+                if ($find!==FALSE) {
+                    unset($lineArray[$key]);
+                }
+
+            }
+
         }
 
-        dd($newArray);
+        //$newArray = array();
+        $lines = array();
+        $items = array();
+
+        $pattern        =  "/(\d+)\s*[a-zA-Z]*+$/";
+        $namePattern = '/(\D+)/';
+    
+
+        //dd($lineArray);
+        for ($i=0; $i <= $index; $i++) { 
+            if(array_key_exists($i, $lineArray)) {
+                $subject        = str_replace('.', '', $lineArray[$i]);
+                $subject        = str_replace(',', '', $subject);
+                $subject        = trim($subject);
+                
+                if( preg_match($pattern, $subject, $matches) ) {
+                    if( preg_match($namePattern, $subject, $nameMatches) ) {
+                        $name = trim($nameMatches[0]);
+                    
+                        $price = number_format((float)$matches[1]/100, 2, '.', '');
+                        if(!empty($name)) {
+                            $items[] = ['price'=>$price, 'name'=>$nameMatches[0] ];
+                        }
+                        
+                  
+                    }
+                }
+            }
+
+        }
+
+
+        return($items);
     } 
+
 
 
 }
