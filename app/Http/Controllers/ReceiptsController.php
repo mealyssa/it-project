@@ -55,7 +55,11 @@ class ReceiptsController extends Controller
   }
 
   public function expenses(){
-
+    $data = session::get('lines');
+    foreach($data as $line) {
+      echo "<script>console.log('$line')</script>";
+    }
+    
     $arrayData = session::get('arrayData');
      return view('pages.expenses',['extract'=>$arrayData]);
   }

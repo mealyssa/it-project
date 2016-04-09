@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extrack receipts';
-        $password = 'SxwbCyz0Qa6APg3ZH/P9LOSR';
+        $applicationId = 'extract receipt scanner4';
+        $password = 'Kge9KUPakeLX+3FruS/2mlic';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -158,7 +158,7 @@ class FineReaderController extends Controller
         $total = $this->getTotal($lineArray);
         $date_purchased = $this->getDatePurchased($lineArray);
         $place_purchased = $this->getPlacePurchased($lineArray);
-        $items = $this->getItems($lineArray,$total['index']);
+        //$items = $this->getItems($lineArray,$total['index']);
 
         $arrayData =  array(
             'vendor'         => $merchant,
@@ -167,19 +167,23 @@ class FineReaderController extends Controller
             'place_purchased'=> $place_purchased,
             'recognizedText' => '',
             'total'          => $total['value'],
-            'items'          => $items,
+            'items'          => [],
             'date'           => ''
          );
 
+       // dd($lineArray);
+
+
         Session::flash('session_ImageName',$image_name);
         Session::flash('arrayData', $arrayData);
+        Session::flash('lines', $lineArray);
         return redirect('expenses');
        // return view('pages.expenses',['extract'=>$arrayData, 'fromUpload'=>true]); 
     }
 
     function getMerchant($lineArray){
 
-        $threshold = 80.00;
+        $threshold = 10.00;
         $merchant = null;
 
         $filters = [
@@ -304,6 +308,8 @@ class FineReaderController extends Controller
     }
 
     function getTotal($lineArray){
+        $lineArray = array_filter($lineArray);
+        $value = null;
         $indexOfTotal = 0;
         $total = 0.00;
         $totalIndeces = [];
@@ -319,8 +325,8 @@ class FineReaderController extends Controller
             'Vat',
             'Sales',
             'Subtotal',
-            'Change'
-
+            'Change',
+            'Net Total'
         ];
 
 
@@ -330,13 +336,17 @@ class FineReaderController extends Controller
                 $newfilter = strtolower($filter);
                 $find = strpos($base, $newfilter);
                 if ($find!==FALSE) {
-                    unset($lineArray[$key]);
+                    $lineArray[$key] = str_replace($newfilter, '', $base);
+
+
                 }
+
 
             }
 
         }
 
+     
 
         foreach ($lineArray as $key => $line) {
             
@@ -347,22 +357,41 @@ class FineReaderController extends Controller
                $find = strpos($base, $newfilter);
 
                if ($find!==FALSE) {
-                    $totalIndeces[] = $key;
+                    $totalIndeces[] = ['key'=>$key, 'filter'=>$newfilter];
                }
             }
         }
 
+        //dd($lineArray);
 
         foreach($totalIndeces as $index) {
+            $key = $index['key'];
+            $line = strtolower($lineArray[ $key ]);
+            $line = str_replace('.', '', $line);
+            $line = str_replace(',', '', $line);
 
-            $line = $lineArray[$index];
-            $newline = preg_replace("/[^0-9]/","",$line);
-            $total = number_format((float)$newline/100, 2, '.', '');
+            $filter = strtolower($index['filter']);
+
+            $rightof_keyword = substr( $line, strpos($line, $filter) + strlen($filter) );
+            $pattern1 = "[\d+]";
+            preg_match($pattern1, $rightof_keyword, $matches);
+            $value = $matches[0];
+  /*          $texts =  array_filter(explode(' ', $rightof_keyword));
+
+            foreach ($texts as $key => $text) {
+                $text = trim( str_replace(".", "", $text) );
+                $resultNumeric = is_numeric($text);
+                if ($resultNumeric) {
+                    $value = $text;
+                    break;
+                }
+            }*/
+            
+
+            $total = number_format((float)$value/100, 2, '.', '');
             $indexOfTotal = $index;
-
-
-
         }
+        //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
