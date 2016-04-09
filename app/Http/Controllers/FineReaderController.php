@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extract receipt scanner4';
-        $password = 'Kge9KUPakeLX+3FruS/2mlic';
+        $applicationId = 'extract receipt scanner5';
+        $password = 'pHtv9j7m/SaCDrq0vQWCMAB9';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -170,13 +170,9 @@ class FineReaderController extends Controller
             'items'          => [],
             'date'           => ''
          );
-
-       // dd($lineArray);
-
-
         Session::flash('session_ImageName',$image_name);
         Session::flash('arrayData', $arrayData);
-        Session::flash('lines', $lineArray);
+
         return redirect('expenses');
        // return view('pages.expenses',['extract'=>$arrayData, 'fromUpload'=>true]); 
     }
@@ -200,8 +196,17 @@ class FineReaderController extends Controller
             "KFC Cebu IT Park",
             "Your Life Pharmacy",
             "Cebu's Original Lechon Belly",
-            "Metro Fresh and Easy Punta"
-
+            "Metro Fresh and Easy Punta",
+            "Gaisano Capital South",
+            "Enzo's Meat Market Foods Corp",
+            "ThreeSixty Pharmacy",
+            "Cebu Familia House Modiste Inc",
+            "Gaisano Grand Mall Minglanilla",
+            "Jey Gas Center",
+            "La Nueva Drugstore Chains,Inc",
+            "Longwin Tabunok",
+            "New Banilad Shell Station",
+            "The Pork Shop"
 
             ];
         $greater = 0;
@@ -225,28 +230,41 @@ class FineReaderController extends Controller
     }
 
     function getOR($lineArray){
+
         $receiptNo = null;
         $found = false;
         $foundBase =null;
         $foundFilter = null;
+
+        $foundIndex = null;
 
         $filters = [
 
                 "OR No",
                 "OR #",
                 "SI #",
+                "0R#",
+                "OR#",
                 "SI No",
+                "S.I. NO",
                 "SALES INVOICE NUMBER",
+                "Sales Invoice Number",
+                "Sales Invoice No",
                 "Official Receipt #",
                 "OR#",
                 "Sales Invoice#",
                 "O.R.",
+                "CASH SALES INVOICE",
+                "RCPT #",
+                "RCPT#",
+                "Rcpt#",
+                "Rcpt #"
             ];
 
         $words = null;
         foreach ($lineArray as $key => $line) {
             
-            foreach ($filters as $key => $filter) {
+            foreach ($filters as  $filter) {
                 $line = str_replace($filter, $filter." ", $line);
                 $newfilter = ($filter);
                 $base = ($line);
@@ -256,9 +274,14 @@ class FineReaderController extends Controller
                    $found = TRUE;
                    $foundBase = $base;
                    $foundFilter = $newfilter;
+                   $foundIndex = $key;
+
                  
                 }
                 
+            }
+            if($found) {
+                break;
             }
 
         }
@@ -277,9 +300,23 @@ class FineReaderController extends Controller
                 }
             }
         }
+        if($receiptNo == "" && $found){
+            $line = ($lineArray[$foundIndex]);
+            $next = ($lineArray[$foundIndex+1]);
+            $filterCharAt = strpos($line,$foundFilter);
+
+            $temp = substr($next, $filterCharAt-100);
+            $temp = trim( str_replace(".", "", $temp) );
+
+            $match = preg_match('[\d+]',$temp,$matches);
+            if($match){
+                $receiptNo = $matches[0];
+            }
+        }
 
        return $receiptNo;
     }
+
 
     function isNumericWithDash($string){ 
 
@@ -346,7 +383,6 @@ class FineReaderController extends Controller
 
         }
 
-     
 
         foreach ($lineArray as $key => $line) {
             
@@ -361,49 +397,44 @@ class FineReaderController extends Controller
                }
             }
         }
-
-        //dd($lineArray);
+        $pattern1 = "[\d+\s*\d{2}\s*]";
 
         foreach($totalIndeces as $index) {
             $key = $index['key'];
             $line = strtolower($lineArray[ $key ]);
             $line = str_replace('.', '', $line);
             $line = str_replace(',', '', $line);
+            $line = str_replace('_', '', $line);
+
 
             $filter = strtolower($index['filter']);
 
             $rightof_keyword = substr( $line, strpos($line, $filter) + strlen($filter) );
-            $pattern1 = "[\d+]";
-            preg_match($pattern1, $rightof_keyword, $matches);
-            $value = $matches[0];
-  /*          $texts =  array_filter(explode(' ', $rightof_keyword));
-
-            foreach ($texts as $key => $text) {
-                $text = trim( str_replace(".", "", $text) );
-                $resultNumeric = is_numeric($text);
-                if ($resultNumeric) {
-                    $value = $text;
-                    break;
-                }
-            }*/
-            
-
-            $total = number_format((float)$value/100, 2, '.', '');
-            $indexOfTotal = $index;
+            $rightof_keyword = str_replace(' ', '', $rightof_keyword);
+            $match = preg_match($pattern1, $rightof_keyword, $matches);
+            if($match) {
+                $value = $matches[0];
+                $total = number_format((float)$value/100, 2, '.', '');
+                $indexOfTotal = $index;
+            }
         }
-        //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
+
     function getDatePurchased($lineArray){
         $date_purchased = null;
         $month =null;
         $day = null;
         $year = null;
+
        $pattern1 = "/\d{2}\/\d{2}\/\d{4}/";
        $pattern2 = "/\d{1}\/\d{2}\/\d{2}/";
        $pattern3 = "/\d{2}\-\d{2}\-\d{4}/";
        $pattern4 = "/(\w+) (\d{1,2}), (\d{4})/";
+       $pattern5 = "(\w{3}\.\d{2}\.\d{4})";
+       $pattern6 = "(\w{3}\s\d{1,2}\s\d{4})";
+
        $removeFilters = [
             'issued on',
             'valid until'
@@ -442,33 +473,49 @@ class FineReaderController extends Controller
         foreach ($lineArray as $key => $line) {
             if (preg_match($pattern1, $line, $matches)) {
                $date_purchased = $matches[0];
+               break;
             }
             elseif (preg_match($pattern2,$line,$matches)) {
                 $date_purchased = $matches[0];
+                break;
             }
             elseif (preg_match($pattern3,$line,$matches)) {
                 $date_purchased = $matches[0];
+                break;
             }
             elseif(preg_match($pattern4, $line,$matches)){
                 $date_purchased = $matches[0];
+                break;
               
-            }      
+            }   
+            elseif(preg_match($pattern5, $line,$matches)){
+                $date_purchased = $matches[0];
+                break;
+              
+            }   
+            elseif(preg_match($pattern6, $line,$matches)){
+            $date_purchased = $matches[0];
+            break;
+          
+            }   
+
+
         }
+
         return $date_purchased;
     }
     function getPlacePurchased($lineArray){
-        $place_purchased = [];
+        $place_purchased = null;
         $filters = [
             'St.',
+            'St .',
             'Street',
-            'North',
-            'South',
             'Road',
             'City',
         ];
 
         $firstTenLines = array();
-        for ($i=1; $i < 10; $i++) { 
+        for ($i=0; $i < 10; $i++) { 
             $firstTenLines[] = $lineArray[$i];
         }
         foreach ($firstTenLines as $key => $line) {
@@ -476,6 +523,7 @@ class FineReaderController extends Controller
             foreach ($filters as $key => $filter) {
                 $newfilter = strtolower($filter);
                 $foundKeyAddress = strpos($base,$newfilter);
+                
                 if($foundKeyAddress!==FALSE){
                     $place_purchased = trim($line);
                     break;
@@ -507,8 +555,6 @@ class FineReaderController extends Controller
             }
 
         }
-
-        //$newArray = array();
         $lines = array();
         $items = array();
 
@@ -516,7 +562,6 @@ class FineReaderController extends Controller
         $namePattern = '/(\D+)/';
     
 
-        //dd($lineArray);
         for ($i=0; $i <= $index; $i++) { 
             if(array_key_exists($i, $lineArray)) {
                 $subject        = str_replace('.', '', $lineArray[$i]);
@@ -538,7 +583,6 @@ class FineReaderController extends Controller
             }
 
         }
-
 
         return($items);
     } 

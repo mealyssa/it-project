@@ -79,7 +79,7 @@
 
             <div class="modal fade" tabindex="-1" id="uploadModal" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
         <div class="modal-dialog">
-          <div class="modal-content">
+          <div class="modal-content" id="contentUpload">
             <!-- <div class="modal-header">
             </div>  -->
 
@@ -87,7 +87,7 @@
                 <div class="container">
                   <div class="row">
                     <div class="col-sm-7" style="border-style: dotted;border-color: #B5ADAD;background-color: rgb(248, 248, 248)">
-                    <div id="ari">
+                    <div id="previewImageDiv">
 
                     </div>
                    
@@ -197,9 +197,10 @@
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
-              $("#ari").html("<img id='previewImage' style=' width: 500px;height: 700px;background-position: center;background-size: cover;'/>");
+              $("#previewImageDiv").html("<img  class='img-responsive' id='previewImage' style='width:auto; background-position: center;background-size: cover;'/>");
               $('#previewImage').attr('src', e.target.result);
               $("#uploadModal").modal('show');
+              
             }
             reader.readAsDataURL(input.files[0]);
         }

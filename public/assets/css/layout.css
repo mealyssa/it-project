@@ -201,3 +201,7 @@ img {
 	-moz-box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
 	box-shadow: 1px 1px 11px 6px rgba(199,199,199,1);
 }
+#previewImageDiv{
+	overflow-y: scroll;
+	height: 500px;
+}

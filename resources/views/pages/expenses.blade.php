@@ -154,19 +154,19 @@
                                         <div class="panel panel-default">
                                             <div class="panel-body">
                                                 <label>Merchant Name :</label>
-                                                <input type="text" class="form-control" value="{{ $extract['vendor'] }}" id="dataExtract" disabled="disable"> 
+                                                <input type="text" class="form-control" value="{!! $extract['vendor'] !!}" id="dataExtract" disabled="disable"> 
 
 
                                                 <label>Receipt/Invoice # :</label>
-                                                <input type="text" class="form-control" value="{{ $extract['receipt_no'] }}" id="dataExtract" disabled="disable"> 
+                                                <input type="text" class="form-control" value="{!! $extract['receipt_no'] !!}" id="dataExtract" disabled="disable"> 
 
                                                 <label>Date of Purchased:</label>
-                                                <input type="text" value="{{ $extract['date_purchased'] }}" class="form-control" disabled="disable"> 
+                                                <input type="text" value="{!! $extract['date_purchased'] !!}" class="form-control" disabled="disable"> 
                                                 <label>Place of Purchased:</label>
-                                                <input type="text" value="{{ $extract['place_purchased'] }}" class="form-control" disabled="disable"> 
+                                                <input type="text" value="{!! $extract['place_purchased'] !!}" class="form-control" disabled="disable"> 
                                                 
                                                 <label>Total Due:</label>
-                                                <input type="text" value="{{ $extract['total'] }}" class="form-control" disabled="disable"> 
+                                                <input type="text" value="{!! $extract['total'] !!}" class="form-control" disabled="disable"> 
   
                                             </div>
                                         </div>
