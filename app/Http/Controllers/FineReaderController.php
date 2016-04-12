@@ -215,8 +215,6 @@ class FineReaderController extends Controller
             "Siknoy Noodle House"
 
 
-
-
             ];
         $greater = 0;
 
@@ -289,9 +287,7 @@ class FineReaderController extends Controller
                 }
                 
             }
-            if($found) {
-                break;
-            }
+            
 
         }
         if($found) {
@@ -427,16 +423,23 @@ class FineReaderController extends Controller
                 $total = number_format((float)$value/100, 2, '.', '');
                 $indexOfTotal = $index;
             }
-            // if($total==0){
-            //     $belowLine = $key+1;
-            //      echo "Total possible".$belowLine;
-            //     //echo $belowLine;
-            // }
+            if($total==0){
+                $belowLine = $key+1;
+                $lineforTotalVal = $lineArray[$belowLine];
+                $words = explode(' ', $lineforTotalVal);
+                foreach ($words as $word) {
+                   $word = str_replace(',', '', $word);
+                   $word = str_replace('.', '', $word);
+                    $matchePossible = preg_match($pattern1, $word);
+                    if($matchePossible){
+                        $total = number_format((float)$word/100,2,'.','');
+                    }
+                   
+
+                }
+            }
             
         }
-
-        
-        //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
@@ -531,7 +534,8 @@ class FineReaderController extends Controller
             'St .',
             'Street',
             'Road',
-            'City',
+            'City'
+
         ];
 
         $firstTenLines = array();
@@ -548,10 +552,27 @@ class FineReaderController extends Controller
                     $place_purchased = trim($line);
                     break;
                 }
+
                
             }
         }
-
+     // echo $fisrtAddress = $place_purchased;
+     //    $filter = 'Ave.';
+     //        foreach ($lineArray as $line){
+     //            $base = strtolower($line);
+     //            $filter = strtolower($filter);
+     //            $foundSecondKey = strpos($base,$filter);
+     //            if($foundSecondKey!==FALSE){
+     //                //echo $fisrtAddress."<br>";
+     //                echo $line;
+     //                $place_purchased = $fisrtAddress.' '.$line;
+     //                 break;
+             
+     //            }
+               
+     //        }
+               
+     //        dd($lineArray);
         return $place_purchased;
     }
 
