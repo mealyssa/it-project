@@ -157,14 +157,14 @@ class FineReaderController extends Controller
         $or_number = $this->getOR($lineArray);
         $total = $this->getTotal($lineArray);
         $date_purchased = $this->getDatePurchased($lineArray);
-        $place_purchased = $this->getPlacePurchased($lineArray);
-        //$items = $this->getItems($lineArray,$total['index']);
+        $finalPlacePurchased = $this->getPlacePurchased($lineArray);
+       // $items = $this->getItems($lineArray,$total['index']);
 
         $arrayData =  array(
             'vendor'         => $merchant,
             'receipt_no'     => $or_number,
             'date_purchased' => $date_purchased,
-            'place_purchased'=> $place_purchased,
+            'place_purchased'=> $finalPlacePurchased,
             'recognizedText' => '',
             'total'          => $total['value'],
             'items'          => [],
@@ -283,7 +283,6 @@ class FineReaderController extends Controller
                    $foundFilter = $newfilter;
                    $foundIndex = $key;
 
-                 
                 }
                 
             }
@@ -355,19 +354,24 @@ class FineReaderController extends Controller
         $indexOfTotal = 0;
         $total = 0.00;
         $totalIndeces = [];
+        $hasSubtotal = false;
         $filters = [
          'Total',
          'Total Due',
         'Total amount',
-        'Amount due'
+        'Amount due',
+        'Due amount',
+        'Total Invoice',
+        'Total amount paid',
+        'Subtotal'
         ];
 
         $removeFilters = [
             'Total Tender',
             'Total Items',
+            'Total Discount',
             'Vat',
             'Sales',
-            'Subtotal',
             'Change',
             'Net Total',
             'Vatable',
@@ -389,24 +393,32 @@ class FineReaderController extends Controller
 
         }
 
-
         foreach ($lineArray as $key => $line) {
             
             $base = strtolower($line);
             foreach ($filters as  $filter) {
                $newfilter = strtolower($filter);
+                $patternTotal = "[^\s*($newfilter)]";
+               $match = preg_match($patternTotal, $base,$matches);
 
-               $find = strpos($base, $newfilter);
-
-               if ($find!==FALSE) {
+               if ($match) {
                     $totalIndeces[] = ['key'=>$key, 'filter'=>$newfilter];
                }
             }
         }
+        if(sizeof($totalIndeces)>1){
+             for ($i=0; $i < sizeof($totalIndeces); $i++) { 
+                if(strtolower($totalIndeces[$i]['filter'])==strtolower('subtotal')){
+                     unset($totalIndeces[$i]);
+                }
+            }
+        }
+
         $pattern1 = "[\d+\s*\d{2}\s*]";
 
         foreach($totalIndeces as $index) {
             $key = $index['key'];
+
             $line = strtolower($lineArray[ $key ]);
             $line = str_replace('.', '', $line);
             $line = str_replace(',', '', $line);
@@ -417,6 +429,7 @@ class FineReaderController extends Controller
 
             $rightof_keyword = substr( $line, strpos($line, $filter) + strlen($filter) );
             $rightof_keyword = str_replace(' ', '', $rightof_keyword);
+           
             $match = preg_match($pattern1, $rightof_keyword, $matches);
             if($match) {
                 $value = $matches[0];
@@ -434,12 +447,12 @@ class FineReaderController extends Controller
                     if($matchePossible){
                         $total = number_format((float)$word/100,2,'.','');
                     }
-                   
 
                 }
             }
             
         }
+       
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
@@ -522,19 +535,21 @@ class FineReaderController extends Controller
           
             }   
 
-
         }
-        //dd($lineArray);
         return $date_purchased;
     }
+
     function getPlacePurchased($lineArray){
-        $place_purchased = null;
+        $place_purchased = array();
+        $finalPlacePurchased =null;
+        $result = null;
         $filters = [
             'St.',
             'St .',
             'Street',
             'Road',
-            'City'
+            'City',
+            'Ave.'
 
         ];
 
@@ -544,45 +559,38 @@ class FineReaderController extends Controller
         }
         foreach ($firstTenLines as $key => $line) {
             $base = strtolower($line);
-            foreach ($filters as $key => $filter) {
+            foreach ($filters as  $filter) {
                 $newfilter = strtolower($filter);
                 $foundKeyAddress = strpos($base,$newfilter);
                 
                 if($foundKeyAddress!==FALSE){
-                    $place_purchased = trim($line);
+                    $place_purchased[] = [ 'line' => trim($line), 'index' =>$key ];
                     break;
-                }
-
-               
+                }     
             }
         }
-     // echo $fisrtAddress = $place_purchased;
-     //    $filter = 'Ave.';
-     //        foreach ($lineArray as $line){
-     //            $base = strtolower($line);
-     //            $filter = strtolower($filter);
-     //            $foundSecondKey = strpos($base,$filter);
-     //            if($foundSecondKey!==FALSE){
-     //                //echo $fisrtAddress."<br>";
-     //                echo $line;
-     //                $place_purchased = $fisrtAddress.' '.$line;
-     //                 break;
-             
-     //            }
-               
-     //        }
-               
-     //        dd($lineArray);
-        return $place_purchased;
+        echo "sdfds";
+      $lineCount = sizeof($place_purchased);
+       if($lineCount>1){
+        echo "sdfdf";
+            $result = $place_purchased[1]['index'] - $place_purchased[0]['index'];
+        }
+     
+         if($result==1){
+            $finalPlacePurchased = $place_purchased[0]['line'].' '.$place_purchased[1]['line'];
+         }
+         else{
+            $finalPlacePurchased = $place_purchased[0]['line'];
+         }
+        
+        
+        return $finalPlacePurchased;
     }
 
     function getItems($lineArray,$index){
-
-
         $removeFilters = [
-            'VAT',
+            'VAT'
         ];
-
 
         foreach($lineArray as $key=>$line) {
             $base = strtolower($line);
@@ -624,8 +632,8 @@ class FineReaderController extends Controller
             }
 
         }
-
-        return($items);
+       
+        //return($items);
     } 
 
 
