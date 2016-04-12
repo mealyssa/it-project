@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extract receipt scanner5';
-        $password = 'pHtv9j7m/SaCDrq0vQWCMAB9';
+        $applicationId = 'extract receipt scanner6';
+        $password = ' aIKV7vi6i66jEVG1hEX0Rzfl';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -206,7 +206,16 @@ class FineReaderController extends Controller
             "La Nueva Drugstore Chains,Inc",
             "Longwin Tabunok",
             "New Banilad Shell Station",
-            "The Pork Shop"
+            "The Pork Shop",
+            "South Town Center",
+            "Family Mart",
+            "Jollibee Cebu Mango",
+            "Jollibee Leon Kilat",
+            "Jolibee Super Metro Mambaling",
+            "Siknoy Noodle House"
+
+
+
 
             ];
         $greater = 0;
@@ -242,23 +251,23 @@ class FineReaderController extends Controller
 
                 "OR No",
                 "OR #",
-                "SI #",
                 "0R#",
-                "OR#",
+                "OR#", 
+                "O.R.",
+                "SI #",
+                "SI#",
                 "SI No",
                 "S.I. NO",
+                "RCPT #",
+                "RCPT#",
+                "Rcpt#",
+                "Rcpt #",
                 "SALES INVOICE NUMBER",
                 "Sales Invoice Number",
                 "Sales Invoice No",
                 "Official Receipt #",
-                "OR#",
                 "Sales Invoice#",
-                "O.R.",
                 "CASH SALES INVOICE",
-                "RCPT #",
-                "RCPT#",
-                "Rcpt#",
-                "Rcpt #"
             ];
 
         $words = null;
@@ -313,7 +322,7 @@ class FineReaderController extends Controller
                 $receiptNo = $matches[0];
             }
         }
-
+        //dd($lineArray);
        return $receiptNo;
     }
 
@@ -352,6 +361,7 @@ class FineReaderController extends Controller
         $totalIndeces = [];
         $filters = [
          'Total',
+         'Total Due',
         'Total amount',
         'Amount due'
         ];
@@ -363,7 +373,9 @@ class FineReaderController extends Controller
             'Sales',
             'Subtotal',
             'Change',
-            'Net Total'
+            'Net Total',
+            'Vatable',
+            'Cash'
         ];
 
 
@@ -375,9 +387,7 @@ class FineReaderController extends Controller
                 if ($find!==FALSE) {
                     $lineArray[$key] = str_replace($newfilter, '', $base);
 
-
                 }
-
 
             }
 
@@ -417,7 +427,16 @@ class FineReaderController extends Controller
                 $total = number_format((float)$value/100, 2, '.', '');
                 $indexOfTotal = $index;
             }
+            // if($total==0){
+            //     $belowLine = $key+1;
+            //      echo "Total possible".$belowLine;
+            //     //echo $belowLine;
+            // }
+            
         }
+
+        
+        //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
@@ -437,7 +456,8 @@ class FineReaderController extends Controller
 
        $removeFilters = [
             'issued on',
-            'valid until'
+            'valid until',
+            'date issued'
        ];
 
        $filters = [
@@ -501,7 +521,7 @@ class FineReaderController extends Controller
 
 
         }
-
+        //dd($lineArray);
         return $date_purchased;
     }
     function getPlacePurchased($lineArray){
