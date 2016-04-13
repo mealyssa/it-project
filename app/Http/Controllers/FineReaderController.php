@@ -90,7 +90,7 @@ class FineReaderController extends Controller
 
         while(true)
         {
-            sleep(5);
+            sleep(2);
             $curlHandle = curl_init();
             curl_setopt($curlHandle, CURLOPT_URL, $url.$qry_str);
             curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, 1);
@@ -158,7 +158,7 @@ class FineReaderController extends Controller
         $total = $this->getTotal($lineArray);
         $date_purchased = $this->getDatePurchased($lineArray);
         $finalPlacePurchased = $this->getPlacePurchased($lineArray);
-       // $items = $this->getItems($lineArray,$total['index']);
+        $items = $this->getItems($lineArray,$total['index']);
 
         $arrayData =  array(
             'vendor'         => $merchant,
@@ -167,7 +167,7 @@ class FineReaderController extends Controller
             'place_purchased'=> $finalPlacePurchased,
             'recognizedText' => '',
             'total'          => $total['value'],
-            'items'          => [],
+            'items'          => $items,
             'date'           => ''
          );
         Session::flash('session_ImageName',$image_name);
@@ -212,7 +212,8 @@ class FineReaderController extends Controller
             "Jollibee Cebu Mango",
             "Jollibee Leon Kilat",
             "Jolibee Super Metro Mambaling",
-            "Siknoy Noodle House"
+            "Siknoy Noodle House",
+            "Ice Giant Desserts & Snacks Inc"
 
 
             ];
@@ -569,7 +570,6 @@ class FineReaderController extends Controller
                 }     
             }
         }
-        echo "sdfds";
       $lineCount = sizeof($place_purchased);
        if($lineCount>1){
         echo "sdfdf";
@@ -604,6 +604,7 @@ class FineReaderController extends Controller
             }
 
         }
+        
         $lines = array();
         $items = array();
 
@@ -611,7 +612,7 @@ class FineReaderController extends Controller
         $namePattern = '/(\D+)/';
     
 
-        for ($i=0; $i <= $index; $i++) { 
+        for ($i=0; $i <= $index['key']; $i++) { 
             if(array_key_exists($i, $lineArray)) {
                 $subject        = str_replace('.', '', $lineArray[$i]);
                 $subject        = str_replace(',', '', $subject);
@@ -632,8 +633,7 @@ class FineReaderController extends Controller
             }
 
         }
-       
-        //return($items);
+        return $items;
     } 
 
 
