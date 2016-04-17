@@ -186,7 +186,7 @@ class FineReaderController extends Controller
             "Shopwise Basak Cebu",
             "Super Metro Basak",
             "Gaisano Tabunok",
-            "ACE HARDWARE PHILIPPINES, INC",
+            "ACE HARDWARE",
             "Cebu Home & Builders Centre",
             "McDonald's South Road",
             "Robinsons Place Cebu",
@@ -216,7 +216,13 @@ class FineReaderController extends Controller
             "Ice Giant Desserts & Snacks Inc",
             "Easy Gas Convenience Station-N.R.A, Branch",
             "Esperanzas Kamay Kainan Inc",
-            "GV Botica"
+            "GV Botica",
+            "New Ventures Shell Station",
+            "Ney Shell Station",
+            "Petron",
+            "Phoenix Service Station",
+            "Rose Pharmacy Inc.",
+            "SaveMore Market"
 
 
             ];
@@ -250,12 +256,15 @@ class FineReaderController extends Controller
         $foundIndex = null;
 
         $filters = [
-                "OR",
+                
                 "OR No",
+                "OR No.",
                 "OR #",
                 "0R#",
                 "O.R.",
                 "SI #",
+                "Si,#",
+                "S.I.#",
                 "SI#",
                 "SI No",
                 "S.I. NO",
@@ -276,41 +285,37 @@ class FineReaderController extends Controller
         foreach ($lineArray as $key => $line) {
             
             foreach ($filters as  $filter) {
-                $line = str_replace($filter, $filter." ", $line);
-                $newfilter = ($filter);
-                $pattern = "[(^|\s)$newfilter]";
-                $base = ($line);
-                //$find = strpos($base, $newfilter);
 
+                
+                $newfilter = ($filter);
+                $pattern = "[(^|\s)$newfilter(\s)]";
+                $base = ($line);
+                $find = strpos($base, $newfilter);
                 $match = preg_match($pattern,$base,$matches);
 
-
-                if ($match) {
-                   
+                if ($find !== FALSE || $match) {
                    $found = TRUE;
-                   $foundBase = $base;
+                   $foundBase = str_replace($filter, $filter." ", $line);
                    $foundFilter = $newfilter;
                    $foundIndex = $key;
                    break 2;
 
                 }
-                else{
 
-                }
                 
             }
             
 
         }
-
-
+  
 
 
         if($found) {
-          
-            $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
+         
+           $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
+           echo $rightof_keyword;
             $texts =  array_filter(explode(' ', $rightof_keyword));
-        
+ 
             foreach ($texts as $key => $text) {
                 $text = trim( str_replace(".", "", $text) );
                 $resultWithDash = $this->isNumericWithDash($text);
@@ -334,8 +339,9 @@ class FineReaderController extends Controller
                 $receiptNo = $matches[0];
             }
         }
-      
-       return $receiptNo;
+        dd($lineArray);
+
+      return $receiptNo;
     }
 
 
@@ -471,7 +477,6 @@ class FineReaderController extends Controller
             }
             
         }
-       //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
@@ -490,6 +495,7 @@ class FineReaderController extends Controller
        $pattern5 = "(\w{3}\.\d{2}\.\d{4})";
        $pattern6 = "(\w{3}\s\d{1,2}\s\d{4})";
        $pattern7 = "/\d{4}\-\d{2}\-\d{2}/";
+       $pattern8 = "/\d{1,2}\/\d{1,2}\/\d{4}/";
 
        $patternArray = [
             $pattern1,
@@ -498,7 +504,8 @@ class FineReaderController extends Controller
             $pattern4,
             $pattern5,
             $pattern6,
-            $pattern7
+            $pattern7,
+            $pattern8
        ];
 
 
@@ -556,7 +563,9 @@ class FineReaderController extends Controller
             "Ave,",
             "Building",
             "Bldg",
-            "North"
+            "North",
+            "Br.",
+            "Brgy"
 
 
         ];
