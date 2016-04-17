@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extract receipt scanner8';
-        $password = ' J2qYyNArc5XPJk2nNGuy24+8';
+        $applicationId = 'extract receipt scanner10';
+        $password = 'vbHHtD4OvE/rQXoixEwn8H8a';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -248,6 +248,8 @@ class FineReaderController extends Controller
 
     function getOR($lineArray){
 
+        $oneline = implode('\n',$lineArray);
+
         $receiptNo = null;
         $found = false;
         $foundBase =null;
@@ -263,15 +265,13 @@ class FineReaderController extends Controller
                 "0R#",
                 "O.R.",
                 "SI #",
-                "Si,#",
+                "Si",
                 "S.I.#",
                 "SI#",
                 "SI No",
                 "S.I. NO",
-                "RCPT #",
-                "RCPT#",
-                "Rcpt#",
-                "Rcpt #",
+                "RCPT",
+                "Rcpt",
                 "SALES INVOICE NUMBER",
                 "Sales Invoice Number",
                 "Sales Invoice No",
@@ -282,32 +282,30 @@ class FineReaderController extends Controller
 
         $words = null;
 
-        foreach ($lineArray as $key => $line) {
+        
             
             foreach ($filters as  $filter) {
 
                 
                 $newfilter = ($filter);
-                $pattern = "[(^|\s)$newfilter(\s)]";
-                $base = ($line);
-                $find = strpos($base, $newfilter);
+                $pattern = "[($filter).?(\s*|\W*)\s*(\d\S+)]";
+                $base = $oneline;
                 $match = preg_match($pattern,$base,$matches);
 
-                if ($find !== FALSE || $match) {
-                   $found = TRUE;
+                if ($match) {
+          /*         $found = TRUE;
                    $foundBase = str_replace($filter, $filter." ", $line);
                    $foundFilter = $newfilter;
                    $foundIndex = $key;
-                   break 2;
-
+                   break;*/
+                  
+                   dd($matches);
+                   //$receiptNo = $matches[3];
                 }
 
                 
             }
             
-
-        }
-  
 
 
         if($found) {
@@ -339,8 +337,6 @@ class FineReaderController extends Controller
                 $receiptNo = $matches[0];
             }
         }
-        dd($lineArray);
-
       return $receiptNo;
     }
 
