@@ -283,6 +283,7 @@ class FineReaderController extends Controller
                    $foundBase = $base;
                    $foundFilter = $newfilter;
                    $foundIndex = $key;
+                   break 2;
 
                 }
                 
@@ -290,6 +291,10 @@ class FineReaderController extends Controller
             
 
         }
+
+
+
+
         if($found) {
           
             $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
