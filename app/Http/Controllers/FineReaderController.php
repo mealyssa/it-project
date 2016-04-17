@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extract receipt scanner6';
-        $password = ' aIKV7vi6i66jEVG1hEX0Rzfl';
+        $applicationId = 'extract receipt scanner7';
+        $password = ' BUntS9Ht1Kgiks+OPiObqsMb';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -213,7 +213,10 @@ class FineReaderController extends Controller
             "Jollibee Leon Kilat",
             "Jolibee Super Metro Mambaling",
             "Siknoy Noodle House",
-            "Ice Giant Desserts & Snacks Inc"
+            "Ice Giant Desserts & Snacks Inc",
+            "Easy Gas Convenience Station-N.R.A, Branch",
+            "Esperanzas Kamay Kainan Inc",
+            "GV Botica"
 
 
             ];
@@ -247,11 +250,10 @@ class FineReaderController extends Controller
         $foundIndex = null;
 
         $filters = [
-
+                "OR",
                 "OR No",
                 "OR #",
                 "0R#",
-                "OR#", 
                 "O.R.",
                 "SI #",
                 "SI#",
@@ -270,20 +272,29 @@ class FineReaderController extends Controller
             ];
 
         $words = null;
+
         foreach ($lineArray as $key => $line) {
             
             foreach ($filters as  $filter) {
                 $line = str_replace($filter, $filter." ", $line);
                 $newfilter = ($filter);
+                $pattern = "[(^|\s)$newfilter]";
                 $base = ($line);
-                $find = strpos($base, $newfilter);
-                if ($find !==FALSE) {
-                    
+                //$find = strpos($base, $newfilter);
+
+                $match = preg_match($pattern,$base,$matches);
+
+
+                if ($match) {
+                   
                    $found = TRUE;
                    $foundBase = $base;
                    $foundFilter = $newfilter;
                    $foundIndex = $key;
                    break 2;
+
+                }
+                else{
 
                 }
                 
@@ -299,7 +310,7 @@ class FineReaderController extends Controller
           
             $rightof_keyword = substr( $foundBase, strpos($foundBase, $foundFilter) + strlen($foundFilter) );
             $texts =  array_filter(explode(' ', $rightof_keyword));
-
+        
             foreach ($texts as $key => $text) {
                 $text = trim( str_replace(".", "", $text) );
                 $resultWithDash = $this->isNumericWithDash($text);
@@ -323,7 +334,7 @@ class FineReaderController extends Controller
                 $receiptNo = $matches[0];
             }
         }
-        //dd($lineArray);
+      
        return $receiptNo;
     }
 
@@ -369,7 +380,8 @@ class FineReaderController extends Controller
         'Due amount',
         'Total Invoice',
         'Total amount paid',
-        'Subtotal'
+        'Subtotal',
+        "Sub Total"
         ];
 
         $removeFilters = [
@@ -389,8 +401,10 @@ class FineReaderController extends Controller
             $base = strtolower($line);
             foreach ($removeFilters as  $filter) {
                 $newfilter = strtolower($filter);
-                $find = strpos($base, $newfilter);
-                if ($find!==FALSE) {
+                $patternWordTotal = "[\s*Sub Total\s*]";
+                $find = preg_match($patternWordTotal,$base, $matches);
+               // $find = strpos($base, $newfilter);
+                if ($find) {
                     $lineArray[$key] = str_replace($newfilter, '', $base);
 
                 }
@@ -458,12 +472,13 @@ class FineReaderController extends Controller
             }
             
         }
-       
+       //dd($lineArray);
         return ['value'=>$total, 'index'=>$indexOfTotal];
 
     }
 
     function getDatePurchased($lineArray){
+
         $date_purchased = null;
         $month =null;
         $day = null;
@@ -475,121 +490,114 @@ class FineReaderController extends Controller
        $pattern4 = "/(\w+) (\d{1,2}), (\d{4})/";
        $pattern5 = "(\w{3}\.\d{2}\.\d{4})";
        $pattern6 = "(\w{3}\s\d{1,2}\s\d{4})";
+       $pattern7 = "/\d{4}\-\d{2}\-\d{2}/";
+
+       $patternArray = [
+            $pattern1,
+            $pattern2,
+            $pattern3,
+            $pattern4,
+            $pattern5,
+            $pattern6,
+            $pattern7
+       ];
+
 
        $removeFilters = [
             'issued on',
             'valid until',
-            'date issued'
+            'date issued',
+            'Date Issued'
        ];
 
-       $filters = [
-            '01' => 'January',
-            '02' => 'February',
-            '03' => 'March',
-            '04' => 'April',
-            '05' => 'May',
-            '06' => 'June',
-            '07' => 'July',
-            '08' => 'August',
-            '09' => 'September',
-            '10' => 'October',
-            '11' => 'November',
-            '12' => 'December'
-        ];
 
         foreach ($lineArray as $key => $line) {
             $base = strtolower($line);
             foreach ($removeFilters as $removeFilter) {
                 $newFilterRemove = strtolower($removeFilter);
 
-                $foundFilter = strpos($line,$newFilterRemove);
+                $foundFilter = strpos($base,$newFilterRemove);
+               
                 if ($foundFilter!==FALSE) {
                     unset($lineArray[$key]);
-
                 }
-                else{
-                  
-                }
+               
             }
         }
+
+
+
         foreach ($lineArray as $key => $line) {
-            if (preg_match($pattern1, $line, $matches)) {
-               $date_purchased = $matches[0];
-               break;
+            foreach ($patternArray as $pattern) {
+                if (preg_match($pattern, $line, $matches)) {
+                $date_purchased = $matches[0];
+                break 2;
+                }  
             }
-            elseif (preg_match($pattern2,$line,$matches)) {
-                $date_purchased = $matches[0];
-                break;
-            }
-            elseif (preg_match($pattern3,$line,$matches)) {
-                $date_purchased = $matches[0];
-                break;
-            }
-            elseif(preg_match($pattern4, $line,$matches)){
-                $date_purchased = $matches[0];
-                break;
-              
-            }   
-            elseif(preg_match($pattern5, $line,$matches)){
-                $date_purchased = $matches[0];
-                break;
-              
-            }   
-            elseif(preg_match($pattern6, $line,$matches)){
-            $date_purchased = $matches[0];
-            break;
-          
-            }   
 
         }
         return $date_purchased;
     }
 
     function getPlacePurchased($lineArray){
+   
+        $lineArray = array_filter(array_map('trim', $lineArray));
+        $lineArray = array_values($lineArray);
         $place_purchased = array();
         $finalPlacePurchased =null;
         $result = null;
         $filters = [
             'St.',
             'St .',
+            'St.,',
             'Street',
             'Road',
             'City',
-            'Ave.'
+            'Ave.',
+            "Ave,",
+            "Building",
+            "Bldg"
+
 
         ];
 
         $firstTenLines = array();
         for ($i=0; $i < 10; $i++) { 
-            $firstTenLines[] = $lineArray[$i];
+            if(array_key_exists($i,$lineArray)){
+                $firstTenLines[] = $lineArray[$i];
+            }
+            
         }
         foreach ($firstTenLines as $key => $line) {
             $base = strtolower($line);
             foreach ($filters as  $filter) {
                 $newfilter = strtolower($filter);
                 $foundKeyAddress = strpos($base,$newfilter);
-                
+               
                 if($foundKeyAddress!==FALSE){
+
                     $place_purchased[] = [ 'line' => trim($line), 'index' =>$key ];
                     break;
                 }     
             }
         }
       $lineCount = sizeof($place_purchased);
+    
        if($lineCount>1){
-        echo "sdfdf";
+
             $result = $place_purchased[1]['index'] - $place_purchased[0]['index'];
+        }
+        elseif($lineCount==1){
+            $finalPlacePurchased = $place_purchased[0]['line'];
+        }
+        else{
+            $finalPlacePurchased=null;
         }
      
          if($result==1){
             $finalPlacePurchased = $place_purchased[0]['line'].' '.$place_purchased[1]['line'];
          }
-         else{
-            $finalPlacePurchased = $place_purchased[0]['line'];
-         }
-        
-        
-        return $finalPlacePurchased;
+    return $finalPlacePurchased;
     }
 
     function getItems($lineArray,$index){
