@@ -16,8 +16,8 @@ class FineReaderController extends Controller
 
     function extract( $image_name ){
 
-        $applicationId = 'extract receipt scanner7';
-        $password = ' BUntS9Ht1Kgiks+OPiObqsMb';
+        $applicationId = 'extract receipt scanner8';
+        $password = ' J2qYyNArc5XPJk2nNGuy24+8';
         $fileName = $image_name;
 
         // $local_directory=dirname(__FILE__).'/receiptsImg';
@@ -401,12 +401,10 @@ class FineReaderController extends Controller
             $base = strtolower($line);
             foreach ($removeFilters as  $filter) {
                 $newfilter = strtolower($filter);
-                $patternWordTotal = "[\s*Sub Total\s*]";
+                $patternWordTotal = "[\s*$newfilter\s*]";
                 $find = preg_match($patternWordTotal,$base, $matches);
-               // $find = strpos($base, $newfilter);
                 if ($find) {
                     $lineArray[$key] = str_replace($newfilter, '', $base);
-
                 }
 
             }
@@ -418,7 +416,7 @@ class FineReaderController extends Controller
             $base = strtolower($line);
             foreach ($filters as  $filter) {
                $newfilter = strtolower($filter);
-                $patternTotal = "[^\s*($newfilter)]";
+                $patternTotal = "[(^|\s*)($newfilter)]";
                $match = preg_match($patternTotal, $base,$matches);
 
                if ($match) {
@@ -427,6 +425,7 @@ class FineReaderController extends Controller
             }
         }
         if(sizeof($totalIndeces)>1){
+
              for ($i=0; $i < sizeof($totalIndeces); $i++) { 
                 if(strtolower($totalIndeces[$i]['filter'])==strtolower('subtotal')){
                      unset($totalIndeces[$i]);
@@ -556,7 +555,8 @@ class FineReaderController extends Controller
             'Ave.',
             "Ave,",
             "Building",
-            "Bldg"
+            "Bldg",
+            "North"
 
 
         ];
@@ -597,6 +597,7 @@ class FineReaderController extends Controller
          if($result==1){
             $finalPlacePurchased = $place_purchased[0]['line'].' '.$place_purchased[1]['line'];
          }
+
     return $finalPlacePurchased;
     }
 
